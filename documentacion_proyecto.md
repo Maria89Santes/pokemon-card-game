@@ -20,6 +20,12 @@
 
 ---
 
+### 🔗 ENLACES DE ACCESO AL PROYECTO:
+* **Código Fuente (GitHub):** [https://github.com/Maria89Santes/pokemon-card-game](https://github.com/Maria89Santes/pokemon-card-game)
+* **Despliegue en Vivo (Vercel):** [https://pokemon-card-game-omega.vercel.app](https://pokemon-card-game-omega.vercel.app)
+
+---
+
 ## 2. INTRODUCCIÓN
 
 El auge de los videojuegos de cartas coleccionables (*Trading Card Games* o TCG) ha trascendido de las mesas físicas a los entornos virtuales de alta interactividad. Franquicias icónicas como Pokémon han establecido estándares complejos de dinámicas de juego basadas en la estrategia, turnos, sinergias elementales y gestión de recursos (energía).
