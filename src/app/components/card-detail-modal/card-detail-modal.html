@@ -1,0 +1,71 @@
+<div class="modal-overlay" *ngIf="card" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()" [ngClass]="getTypeClass(card.tipo)">
+    
+    <!-- Botón de Cerrar (Círculo Superior) -->
+    <button class="btn-close" (click)="onClose()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="modal-grid">
+      <!-- Sección Izquierda: Ilustración de la Carta Ampliada -->
+      <div class="card-visual-box">
+        <div class="visual-glow"></div>
+        <img [src]="card.imagen" [alt]="card.nombre" class="modal-card-image">
+      </div>
+
+      <!-- Sección Derecha: Información Detallada -->
+      <div class="card-info-box">
+        <span class="info-rarity" [ngClass]="'rare-' + card.rareza.toLowerCase()">{{ card.rareza }}</span>
+        <h2 class="info-title">{{ card.nombre }}</h2>
+        
+        <div class="info-badges">
+          <span class="info-badge-type">{{ card.tipo }}</span>
+          <span class="info-badge-hp">HP {{ card.vida }}</span>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Atributos de Batalla -->
+        <div class="info-stats">
+          <h3 class="stat-section-title">Atributos de Batalla</h3>
+          
+          <div class="detail-stat-row">
+            <span class="stat-name">Ataque</span>
+            <div class="bar-outer">
+              <div class="bar-inner atk-glow" [style.width.%]="(card.ataque / 150) * 100"></div>
+            </div>
+            <span class="stat-number">{{ card.ataque }}</span>
+          </div>
+
+          <div class="detail-stat-row">
+            <span class="stat-name">Defensa</span>
+            <div class="bar-outer">
+              <div class="bar-inner def-glow" [style.width.%]="(card.defensa / 150) * 100"></div>
+            </div>
+            <span class="stat-number">{{ card.defensa }}</span>
+          </div>
+        </div>
+
+        <!-- Habilidad Especial -->
+        <div class="info-ability-box" *ngIf="card.habilidad">
+          <div class="ability-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>Habilidad Especial</span>
+          </div>
+          <p class="ability-text">{{ card.habilidad }}</p>
+        </div>
+
+        <!-- Lore y Descripción Histórica -->
+        <div class="info-description-box" *ngIf="card.descripcion">
+          <h4 class="description-title">Lore / Descripción</h4>
+          <p class="description-text">{{ card.descripcion }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

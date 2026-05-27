@@ -1,0 +1,349 @@
+.card-container {
+  width: 100%;
+  max-width: 320px;
+  background: rgba(20, 23, 43, 0.65);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              box-shadow 0.35s ease, 
+              background-color 0.4s ease, 
+              border-color 0.4s ease;
+  overflow: hidden;
+  user-select: none;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--rx, 0) * 1deg)) rotateY(calc(var(--ry, 0) * 1deg));
+}
+
+.card-container:hover {
+  transform: translateY(-8px) rotateX(calc(var(--rx, 0) * 1deg)) rotateY(calc(var(--ry, 0) * 1deg)) scale(1.045);
+  background: rgba(28, 32, 62, 0.8);
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.08), transparent 60%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Efecto Holográfico de Brillo Interactivo Premium (Foil Foil Effect) */
+.holo-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0) 55%
+  ), linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0) 25%,
+    rgba(0, 229, 255, 0.25) 36%,
+    rgba(213, 0, 249, 0.3) 41%,
+    rgba(255, 255, 255, 0.45) 46%,
+    rgba(255, 225, 0, 0.25) 51%,
+    rgba(255, 23, 68, 0.2) 56%,
+    rgba(255, 255, 255, 0) 70%,
+    transparent 100%
+  );
+  background-size: 175% 175%;
+  background-position: calc(var(--mx, 50%) * 1.5) calc(var(--my, 50%) * 1.5);
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  transition: opacity 0.35s ease, background-position 0.2s ease;
+}
+
+.card-container.hovered .holo-shine {
+  opacity: 1;
+}
+
+/* Variables de Color por Tipo de Pokémon */
+.type-electric {
+  --type-theme: var(--type-electric);
+  --type-theme-rgb: 255, 225, 0;
+}
+.type-fire {
+  --type-theme: var(--type-fire);
+  --type-theme-rgb: 255, 55, 0;
+}
+.type-water {
+  --type-theme: var(--type-water);
+  --type-theme-rgb: 0, 162, 255;
+}
+.type-grass {
+  --type-theme: var(--type-grass);
+  --type-theme-rgb: 0, 255, 102;
+}
+.type-psychic {
+  --type-theme: var(--type-psychic);
+  --type-theme-rgb: 178, 0, 255;
+}
+.type-normal {
+  --type-theme: var(--type-normal);
+  --type-theme-rgb: 226, 232, 240;
+}
+
+.card-container {
+  border-top: 4px solid var(--type-theme);
+}
+
+.card-container:hover {
+  border-color: var(--type-theme);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 
+              0 0 30px rgba(var(--type-theme-rgb), 0.35),
+              inset 0 0 15px rgba(var(--type-theme-rgb), 0.15);
+}
+
+/* Estilos de Diseño por Rareza de Carta */
+.legendary-card {
+  border: 1.5px solid rgba(255, 214, 0, 0.3);
+  border-top: 5px solid var(--type-theme);
+  background: linear-gradient(135deg, rgba(20, 23, 43, 0.8), rgba(40, 35, 20, 0.8)) !important;
+}
+.legendary-card:hover {
+  border-color: rgba(255, 214, 0, 0.9);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 
+              0 0 35px rgba(255, 214, 0, 0.4),
+              0 0 20px rgba(var(--type-theme-rgb), 0.25);
+}
+
+.epic-card {
+  border: 1.5px solid rgba(213, 0, 249, 0.3);
+  border-top: 5px solid var(--type-theme);
+  background: linear-gradient(135deg, rgba(20, 23, 43, 0.8), rgba(40, 20, 48, 0.8)) !important;
+}
+.epic-card:hover {
+  border-color: rgba(213, 0, 249, 0.9);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 
+              0 0 35px rgba(213, 0, 249, 0.4),
+              0 0 20px rgba(var(--type-theme-rgb), 0.25);
+}
+
+.rare-card {
+  border: 1.5px solid rgba(0, 229, 255, 0.2);
+}
+.rare-card:hover {
+  border-color: rgba(0, 229, 255, 0.7);
+}
+
+.common-card {
+  border: 1.5px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Estilos de Encabezado */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.card-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.card-hp {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.hp-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--type-theme);
+}
+
+.hp-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* Caja de Imagen */
+.card-image-box {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.card-image {
+  height: 85%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+  transition: var(--transition-smooth);
+  z-index: 2;
+}
+
+.card-container:hover .card-image {
+  transform: scale(1.08) translateY(-4px);
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,0.55));
+}
+
+.card-badges {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 3;
+}
+
+.badge-type {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: rgba(11, 13, 25, 0.85);
+  color: var(--type-theme);
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--type-theme);
+  backdrop-filter: blur(4px);
+  text-transform: uppercase;
+}
+
+.badge-rarity {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: rgba(11, 13, 25, 0.85);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  text-transform: uppercase;
+}
+
+.rare-legendaria {
+  color: var(--accent-yellow);
+  border: 1px solid var(--accent-yellow);
+  box-shadow: 0 0 6px rgba(255, 214, 0, 0.25);
+}
+.rare-épica, .rare-epica {
+  color: #d500f9;
+  border: 1px solid #d500f9;
+}
+.rare-rara {
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+}
+.rare-común, .rare-comun {
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Sección de Estadísticas */
+.card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  width: 55px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.stat-bar-bg {
+  flex-grow: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.atk-bar {
+  background: linear-gradient(90deg, #ff5722, var(--accent-red));
+}
+
+.def-bar {
+  background: linear-gradient(90deg, #00b0ff, var(--accent-cyan));
+}
+
+.stat-value {
+  width: 25px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* Detalles de Habilidad */
+.card-ability {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ability-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--type-theme);
+  letter-spacing: 0.5px;
+}
+
+.ability-desc {
+  font-size: 0.72rem;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+/* Descripción de Sabor (Flavor Text) */
+.card-flavor {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.35;
+  border-left: 2px solid var(--border-color);
+  padding-left: 8px;
+}

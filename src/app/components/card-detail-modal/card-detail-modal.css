@@ -1,0 +1,328 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(7, 8, 16, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 24px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 760px;
+  background: rgba(20, 23, 43, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  position: relative;
+  padding: 40px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  animation: scaleUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Colores de Tipo con resplandor neón */
+.type-electric { --type-theme: var(--type-electric); --type-theme-rgb: 255, 214, 0; }
+.type-fire { --type-theme: var(--type-fire); --type-theme-rgb: 255, 61, 0; }
+.type-water { --type-theme: var(--type-water); --type-theme-rgb: 0, 176, 255; }
+.type-grass { --type-theme: var(--type-grass); --type-theme-rgb: 0, 230, 118; }
+.type-psychic { --type-theme: var(--type-psychic); --type-theme-rgb: 213, 0, 249; }
+.type-normal { --type-theme: var(--type-normal); --type-theme-rgb: 168, 167, 122; }
+
+.modal-content {
+  border-top: 5px solid var(--type-theme);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--type-theme-rgb), 0.15);
+}
+
+.btn-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  z-index: 10;
+}
+
+.btn-close:hover {
+  background: rgba(255, 23, 68, 0.1);
+  color: #ff5252;
+  border-color: rgba(255, 23, 68, 0.3);
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
+  align-items: center;
+}
+
+/* Caja de Imagen Izquierda */
+.card-visual-box {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.visual-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 30%, rgba(var(--type-theme-rgb), 0.15), transparent 70%);
+  z-index: 1;
+}
+
+.modal-card-image {
+  height: 85%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6));
+  z-index: 2;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Caja de Información Derecha */
+.card-info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 12px;
+}
+
+.info-rarity {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.rare-legendaria { background: rgba(255, 214, 0, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
+.rare-épica, .rare-epica { background: rgba(213, 0, 249, 0.1); color: #d500f9; border: 1px solid #d500f9; }
+.rare-rara { background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
+.rare-común, .rare-comun { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+.info-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.info-badges {
+  display: flex;
+  gap: 12px;
+}
+
+.info-badge-type {
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(var(--type-theme-rgb), 0.1);
+  color: var(--type-theme);
+  border: 1px solid var(--type-theme);
+  padding: 4px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-badge-hp {
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background: var(--border-color);
+}
+
+/* Atributos / Stats */
+.info-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-section-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-name {
+  width: 70px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bar-outer {
+  flex-grow: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-inner {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.atk-glow { background: linear-gradient(90deg, #ff5722, var(--accent-red)); box-shadow: 0 0 8px rgba(255, 23, 68, 0.3); }
+.def-glow { background: linear-gradient(90deg, #00b0ff, var(--accent-cyan)); box-shadow: 0 0 8px rgba(0, 229, 255, 0.3); }
+
+.stat-number {
+  width: 30px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* Caja de Habilidad Especial */
+.info-ability-box {
+  background: rgba(var(--type-theme-rgb), 0.03);
+  border: 1px solid rgba(var(--type-theme-rgb), 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--type-theme);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ability-text {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* Caja de Descripción / Flavor */
+.info-description-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.description-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.description-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  font-style: italic;
+  border-left: 3px solid var(--border-color);
+  padding-left: 12px;
+}
+
+/* Scrollbar personalizado para el panel de detalles */
+.card-info-box::-webkit-scrollbar {
+  width: 5px;
+}
+.card-info-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+.card-info-box::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .modal-content {
+    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .card-visual-box {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+  .card-info-box {
+    max-height: none;
+    padding-right: 0;
+  }
+  .btn-close {
+    top: 16px;
+    right: 16px;
+  }
+}

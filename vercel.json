@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "dist/pokemon-card-game/browser",
+  "buildCommand": "npx ng build --configuration production",
+  "installCommand": "npm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

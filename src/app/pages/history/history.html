@@ -1,0 +1,117 @@
+<app-navbar></app-navbar>
+
+<div class="history-page">
+
+  <!-- Hero Header -->
+  <div class="history-hero">
+    <div class="hero-glow"></div>
+    <h1 class="history-title">
+      <span class="title-icon">📜</span>
+      Historial de Partidas
+    </h1>
+    <p class="history-subtitle">Registro completo de tus batallas como Entrenador Pokémon</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">⚔️</div>
+      <div class="stat-value">{{ battles.length }}</div>
+      <div class="stat-label">Total Partidas</div>
+    </div>
+    <div class="stat-card stat-wins">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-value">{{ totalWins }}</div>
+      <div class="stat-label">Victorias</div>
+    </div>
+    <div class="stat-card stat-losses">
+      <div class="stat-icon">💀</div>
+      <div class="stat-value">{{ totalLosses }}</div>
+      <div class="stat-label">Derrotas</div>
+    </div>
+    <div class="stat-card stat-winrate">
+      <div class="stat-icon">📊</div>
+      <div class="stat-value">{{ winrate }}%</div>
+      <div class="stat-label">Winrate</div>
+    </div>
+    <div class="stat-card stat-ia">
+      <div class="stat-icon">🤖</div>
+      <div class="stat-value">{{ vsIaCount }}</div>
+      <div class="stat-label">vs IA</div>
+    </div>
+    <div class="stat-card stat-pvp">
+      <div class="stat-icon">👤</div>
+      <div class="stat-value">{{ pvpCount }}</div>
+      <div class="stat-label">PvP Online</div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Cargando historial...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && battles.length === 0">
+    <div class="empty-icon">🎴</div>
+    <h2>Aún no has jugado ninguna partida</h2>
+    <p>¡Construye tu mazo y empieza tu aventura como Entrenador!</p>
+    <button class="btn-play-now" (click)="goToBattle()">⚔️ Ir a Mis Mazos</button>
+  </div>
+
+  <!-- Battle Table -->
+  <div class="history-table-wrap" *ngIf="!loading && battles.length > 0">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Modo</th>
+          <th>Rival</th>
+          <th>Resultado</th>
+          <th>Fuente</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let battle of pagedBattles; let i = index"
+            class="history-row"
+            [class.row-win]="battle.resultado === 'victoria'"
+            [class.row-loss]="battle.resultado === 'derrota'"
+            [class.row-pending]="battle.resultado === 'pendiente'">
+          <td class="col-num">{{ currentPage * pageSize + i + 1 }}</td>
+          <td class="col-date">{{ formatDate(battle.fecha) }}</td>
+          <td class="col-mode">
+            <span class="mode-badge" [class.mode-ia]="battle.modo === 'vs_ia'" [class.mode-pvp]="battle.modo !== 'vs_ia'">
+              {{ getModeLabel(battle.modo) }}
+            </span>
+          </td>
+          <td class="col-rival">{{ battle.rival }}</td>
+          <td class="col-result">
+            <span class="result-badge" 
+                  [class.badge-win]="battle.resultado === 'victoria'"
+                  [class.badge-loss]="battle.resultado === 'derrota'"
+                  [class.badge-pending]="battle.resultado === 'pendiente'">
+              <span *ngIf="battle.resultado === 'victoria'">🏆 Victoria</span>
+              <span *ngIf="battle.resultado === 'derrota'">💀 Derrota</span>
+              <span *ngIf="battle.resultado === 'pendiente'">⏳ En curso</span>
+            </span>
+          </td>
+          <td class="col-source">
+            <span class="source-tag" [class.source-local]="battle.isLocal" [class.source-cloud]="!battle.isLocal">
+              {{ battle.isLocal ? '💾 Local' : '☁️ Nube' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn-page" [disabled]="currentPage === 0" (click)="prevPage()">← Anterior</button>
+      <span class="page-info">Página {{ currentPage + 1 }} / {{ totalPages }}</span>
+      <button class="btn-page" [disabled]="currentPage >= totalPages - 1" (click)="nextPage()">Siguiente →</button>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,237 @@
+<app-navbar></app-navbar>
+
+<!-- Cargando... -->
+<div class="loading-container" *ngIf="loading">
+  <span class="spinner-large"></span>
+  <p>Invocando el laboratorio del Creador de Mazos...</p>
+</div>
+
+<div class="deck-builder-page" *ngIf="!loading && mazo">
+  <div class="builder-container">
+    
+    <!-- Barra Superior de Acciones y Nombre -->
+    <header class="builder-header-row">
+      <div class="header-left">
+        <a routerLink="/decks" class="btn-back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Mis Mazos</span>
+        </a>
+        <div class="title-box">
+          <h1 class="builder-title">Creador de Mazos: {{ mazo.nombre }}</h1>
+          <p class="builder-subtitle">Selecciona tus cartas e integra la mejor estrategia para combatir.</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Notificaciones de Éxito / Error -->
+        <div class="alert-inline success" *ngIf="saveSuccess">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>¡Mazo guardado con éxito!</span>
+        </div>
+        <div class="alert-inline error" *ngIf="saveError">
+          <span>{{ saveError }}</span>
+        </div>
+
+        <!-- Borrador Temporal de SQLite Local -->
+        <div class="alert-inline info sqlite-draft" *ngIf="hasLocalDraft">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span class="sqlite-label">Borrador en SQLite Local</span>
+          <button class="btn-discard-draft" (click)="discardLocalDraft()" title="Descartar borrador y restaurar de Supabase">
+            Descartar
+          </button>
+        </div>
+
+        <button class="btn-save-deck" (click)="handleSaveDeck()" [disabled]="saving">
+          <span *ngIf="!saving">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Guardar Mazo
+          </span>
+          <span *ngIf="saving" class="spinner"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Área de Trabajo Principal (Dos Columnas) -->
+    <div class="builder-workspace">
+      
+      <!-- COLUMNA 1: Catálogo General (Izquierda) -->
+      <main class="catalog-pool-column">
+        <div class="catalog-card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 16px; margin-bottom: 8px;">
+          <h2 class="column-header-title" style="margin-bottom: 0;">Catálogo Disponible</h2>
+          
+          <!-- Sandbox Toggle Switch -->
+          <div class="sandbox-toggle-premium" style="display: flex; align-items: center; gap: 10px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.25); padding: 6px 14px; border-radius: 20px; box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);">
+            <span style="font-size: 0.72rem; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px;">
+              <span>Modo Sandbox</span> <span style="font-size: 0.9rem;">🔓</span>
+            </span>
+            <label class="switch-premium" style="position: relative; display: inline-block; width: 34px; height: 18px; cursor: pointer;">
+              <input type="checkbox" [(ngModel)]="sandboxMode" style="opacity: 0; width: 0; height: 0; margin: 0;">
+              <span class="slider-round" [style.background]="sandboxMode ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)'" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <span class="slider-dot" [style.transform]="sandboxMode ? 'translateX(14px)' : 'translateX(0)'" style="position: absolute; height: 12px; width: 12px; left: 3px; bottom: 2px; background-color: #0b0d19; transition: .4s; border-radius: 50%;"></span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Filtro de Búsqueda y Tipos -->
+          <div class="catalog-filters">
+            <div class="search-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Buscar Pokémon..." 
+                [(ngModel)]="searchTerm" 
+                (input)="applyFilters()"
+                class="search-input"
+              >
+            </div>
+            
+            <div class="type-chips">
+              <button class="chip chip-electric" [class.active]="selectedType === 'Eléctrico'" (click)="selectTypeFilter('Eléctrico')">Elec</button>
+              <button class="chip chip-fire" [class.active]="selectedType === 'Fuego'" (click)="selectTypeFilter('Fuego')">Fueg</button>
+              <button class="chip chip-water" [class.active]="selectedType === 'Agua'" (click)="selectTypeFilter('Agua')">Agu</button>
+              <button class="chip chip-grass" [class.active]="selectedType === 'Planta'" (click)="selectTypeFilter('Planta')">Plan</button>
+              <button class="chip chip-psychic" [class.active]="selectedType === 'Psíquico'" (click)="selectTypeFilter('Psíquico')">Psiq</button>
+              <button class="chip chip-normal" [class.active]="selectedType === 'Normal'" (click)="selectTypeFilter('Normal')">Norm</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-pool-box" *ngIf="filteredPool.length === 0">
+          <p>No se encontraron cartas en tu catálogo con los criterios seleccionados.</p>
+        </div>
+
+        <!-- Grilla de cartas disponibles en el Pool -->
+        <div class="catalog-cards-grid" *ngIf="filteredPool.length > 0">
+          <div class="catalog-item-container" *ngFor="let card of filteredPool" [class.card-locked]="!sandboxMode && (userCollection[card.id] === undefined || userCollection[card.id] === 0)">
+            
+            <!-- Componente de Carta Reutilizado -->
+            <app-pokemon-card [card]="card" (click)="openCardDetail(card, $event)"></app-pokemon-card>
+            
+            <!-- Candado de Bloqueo TCG -->
+            <div class="lock-overlay" *ngIf="!sandboxMode && (userCollection[card.id] === undefined || userCollection[card.id] === 0)">
+              <span class="lock-icon">🔒</span>
+              <span class="lock-text">Bloqueada</span>
+            </div>
+
+            <!-- Superposición de controles especiales para Deck Builder -->
+            <div class="card-builder-controls" *ngIf="sandboxMode || userCollection[card.id] > 0">
+              <button class="btn-view-detail" (click)="openCardDetail(card, $event)">Detalles</button>
+              
+              <div class="add-remove-row">
+                <button class="btn-qty-action minus" [disabled]="getCardQuantityInDeck(card.id) === 0" (click)="removeCard(card.id); $event.stopPropagation()">-</button>
+                <span class="qty-indicator" [class.in-deck]="getCardQuantityInDeck(card.id) > 0">
+                  {{ getCardQuantityInDeck(card.id) }} / {{ sandboxMode ? 4 : userCollection[card.id] }}
+                </span>
+                <button class="btn-qty-action plus" [disabled]="getCardQuantityInDeck(card.id) >= (sandboxMode ? 4 : (userCollection[card.id] || 0))" (click)="addCard(card); $event.stopPropagation()">+</button>
+              </div>
+            </div>
+
+            <!-- Botón de detalles alternativo para cartas bloqueadas -->
+            <div class="card-builder-controls locked-controls" *ngIf="!sandboxMode && (userCollection[card.id] === undefined || userCollection[card.id] === 0)">
+              <button class="btn-view-detail locked-btn" (click)="openCardDetail(card, $event)">Ver Carta</button>
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      <!-- COLUMNA 2: Detalles del Mazo en Construcción (Derecha) -->
+      <aside class="deck-sidebar-column">
+        
+        <!-- Bloque 1: Estadísticas del Mazo actualizados en vivo -->
+        <div class="sidebar-box stats-box">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <h3 class="box-title" style="margin-bottom: 0;">Métricas del Mazo</h3>
+            <div class="sleeve-deck-preview" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <span style="font-size: 0.58rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Funda</span>
+              <div class="sleeve-foil-card" [ngClass]="profile?.reverso_equipado || 'default'">
+                <div class="sleeve-shimmer"></div>
+                <div class="sleeve-pokeball-art"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="stats-row">
+            <span class="stat-lbl">Total de cartas</span>
+            <div class="total-cards-indicator">
+              <span class="total-count" [class.complete]="totalCards >= 10">{{ totalCards }}</span>
+              <span class="total-limit">/ 10 aconsejado</span>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <span class="stat-lbl">Ataque Promedio</span>
+            <span class="stat-val text-gold">{{ averageAttack }} ATK</span>
+          </div>
+
+          <div class="stats-row">
+            <span class="stat-lbl">Defensa Promedio</span>
+            <span class="stat-val text-cyan">{{ averageDefense }} DEF</span>
+          </div>
+
+          <!-- Distribución de Elementos -->
+          <div class="types-breakdown-box" *ngIf="deckCards.length > 0">
+            <span class="stat-lbl-breakdown">Desglose de Tipos</span>
+            <div class="types-chips-grid">
+              <div class="type-breakdown-chip" *ngFor="let t of typeDistribution" [ngClass]="'chip-' + t.tipo.toLowerCase()">
+                <span class="t-name">{{ t.tipo }}</span>
+                <span class="t-count">{{ t.cantidad }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloque 2: Listado textual y rápido de cartas en el mazo -->
+        <div class="sidebar-box deck-list-box">
+          <h3 class="box-title">Cartas en Mazo</h3>
+          
+          <div class="empty-deck-alert" *ngIf="deckCards.length === 0">
+            <p>El mazo está vacío. Añade cartas del catálogo usando los botones +.</p>
+          </div>
+
+          <div class="deck-cards-list" *ngIf="deckCards.length > 0">
+            <div class="deck-list-item" *ngFor="let item of deckCards">
+              <div class="item-visual-thumb">
+                <img [src]="item.imagen" [alt]="item.nombre">
+              </div>
+              <div class="item-meta">
+                <span class="item-name">{{ item.nombre }}</span>
+                <span class="item-type-tag text-muted">{{ item.tipo }}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-small-qty" (click)="removeCard(item.id)">-</button>
+                <span class="item-qty">{{ item.cantidad }}</span>
+                <button class="btn-small-qty" [disabled]="item.cantidad >= 4" (click)="addCard(item)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal Global de Detalles de Carta -->
+<app-card-detail-modal 
+  [card]="selectedCardForDetail" 
+  (close)="closeCardDetail()"
+></app-card-detail-modal>

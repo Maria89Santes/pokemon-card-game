@@ -1,0 +1,64 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">
+        <span class="logo-pok">Pokémon</span><span class="logo-tcg">TCG</span>
+      </div>
+      <h2 class="auth-title">Iniciar Sesión</h2>
+      <p class="auth-subtitle">Ingresa para jugar y administrar tus mazos</p>
+    </div>
+
+    <!-- Mensajes de Error Estilizados -->
+    <div class="alert-box error" *ngIf="errorMessage">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Formulario de Inicio de Sesión -->
+    <form class="auth-form" (ngSubmit)="onSubmit()">
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email" class="form-label">Correo electrónico</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="email" 
+          class="form-input" 
+          placeholder="ejemplo@entrenador.com" 
+          required
+          [disabled]="loading"
+        >
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label for="password" class="form-label">Contraseña</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="password" 
+          class="form-input" 
+          placeholder="••••••••" 
+          required
+          [disabled]="loading"
+        >
+      </div>
+
+      <button type="submit" class="btn-auth" [disabled]="loading">
+        <span *ngIf="!loading">Ingresar a la Arena</span>
+        <span *ngIf="loading" class="spinner"></span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <span>¿No tienes una cuenta?</span>
+      <a routerLink="/register" class="auth-link">Regístrate</a>
+    </div>
+  </div>
+</div>

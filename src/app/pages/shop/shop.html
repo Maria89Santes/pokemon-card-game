@@ -1,0 +1,282 @@
+<app-navbar></app-navbar>
+
+<div class="shop-page" *ngIf="profile">
+  <div class="shop-container">
+    
+    <!-- ==================== VISTA 1: VITRINA DE TIENDA ==================== -->
+    <div class="shop-vitrine-view" *ngIf="state === 'shop'">
+      
+      <!-- Cabecera de la Tienda -->
+      <header class="shop-header">
+        <div class="shop-title-box">
+          <h1 class="shop-title">Bazar del Entrenador 🛒🪙</h1>
+          <p class="shop-subtitle">Gasta tus monedas en booster packs para expandir tu colección y armar mazos invencibles.</p>
+        </div>
+        
+        <!-- Saldo del Jugador -->
+        <div class="player-coins-card">
+          <span class="coins-title">Tus Riquezas</span>
+          <div class="coins-display-neon">
+            <span class="gold-coin-rotate">🪙</span>
+            <span class="coins-amount">{{ profile.monedas || 0 }}</span>
+            <span class="coins-lbl">Monedas</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Selector de Pestañas (Tab Navigation) -->
+      <div class="shop-tabs-bar" style="display: flex; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 2px; margin-top: 10px; margin-bottom: 24px;">
+        <button class="shop-tab-btn" [class.active]="activeTab === 'packs'" (click)="activeTab = 'packs'" style="background: transparent; border: none; padding: 12px 24px; color: var(--text-secondary); font-family: var(--font-main); font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.3s ease; position: relative;">
+          <span>Booster Packs 🎴</span>
+          <div class="active-indicator" *ngIf="activeTab === 'packs'" style="position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: var(--accent-yellow); box-shadow: 0 0 10px var(--accent-yellow); border-radius: 4px;"></div>
+        </button>
+        <button class="shop-tab-btn" [class.active]="activeTab === 'sleeves'" (click)="activeTab = 'sleeves'" style="background: transparent; border: none; padding: 12px 24px; color: var(--text-secondary); font-family: var(--font-main); font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.3s ease; position: relative;">
+          <span>Fundas de Cartas 🎨</span>
+          <div class="active-indicator" *ngIf="activeTab === 'sleeves'" style="position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); border-radius: 4px;"></div>
+        </button>
+      </div>
+
+      <!-- PESTAÑA A: SOBRES DE CARTAS -->
+      <div class="packs-grid-container" *ngIf="activeTab === 'packs'">
+        <div class="pack-showcase-card" *ngFor="let pack of packs" [style.border-color]="pack.accentColor">
+          <div class="pack-glow-effect" [style.background]="pack.bgGradient"></div>
+          
+          <div class="pack-badge" [class.premium-badge]="pack.badge === 'Premium'">
+            {{ pack.badge }}
+          </div>
+          
+          <!-- Visualización del sobre flotante -->
+          <div class="pack-foil-art-container" [style.background]="pack.bgGradient">
+            <div class="foil-shimmer"></div>
+            <div class="pack-pokeball-art"></div>
+            <span class="pack-art-element" *ngIf="pack.id === 'planta'">🍃</span>
+            <span class="pack-art-element" *ngIf="pack.id === 'fuego'">🔥</span>
+            <span class="pack-art-element" *ngIf="pack.id === 'agua'">🌊</span>
+            <span class="pack-art-element" *ngIf="pack.id === 'trueno'">⚡</span>
+            <span class="pack-art-element" *ngIf="pack.id === 'legends'">🌌</span>
+          </div>
+
+          <div class="pack-details">
+            <h3 class="pack-name">{{ pack.name }}</h3>
+            <p class="pack-desc">{{ pack.desc }}</p>
+            
+            <div class="pack-footer-buy">
+              <div class="pack-price">
+                <span class="price-val">🪙 {{ pack.cost }}</span>
+                <span class="price-lbl">Monedas</span>
+              </div>
+              
+              <button 
+                class="btn-buy-pack" 
+                (click)="buyPack(pack)" 
+                [disabled]="buying || (profile.monedas || 0) < pack.cost"
+                [style.background]="pack.accentColor"
+              >
+                <span>Adquirir Sobres</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA B: FUNDAS DE CARTAS -->
+      <div class="sleeves-grid-container" *ngIf="activeTab === 'sleeves'">
+        <div class="sleeve-showcase-card" *ngFor="let sleeve of sleeves" [style.border-color]="sleeve.accentColor" [class.is-equipped]="isSleeveEquipped(sleeve.id)">
+          <div class="sleeve-equipped-badge" *ngIf="isSleeveEquipped(sleeve.id)">Equipado</div>
+          
+          <!-- Visualización de la Funda -->
+          <div class="sleeve-preview-box">
+            <div class="sleeve-foil-card" [ngClass]="sleeve.bgClass">
+              <div class="sleeve-shimmer"></div>
+              <div class="sleeve-pokeball-art"></div>
+            </div>
+          </div>
+
+          <div class="sleeve-details">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+              <h3 class="sleeve-name">{{ sleeve.name }}</h3>
+              <span class="sleeve-rarity-badge" [ngClass]="'badge-' + sleeve.bgClass">{{ sleeve.badge }}</span>
+            </div>
+            <p class="sleeve-desc">{{ sleeve.desc }}</p>
+            
+            <div class="sleeve-footer">
+              <div class="sleeve-price" *ngIf="!hasSleeve(sleeve.id)">
+                <span class="price-val">🪙 {{ sleeve.cost }}</span>
+                <span class="price-lbl">Monedas</span>
+              </div>
+              
+              <div class="sleeve-price-free" *ngIf="hasSleeve(sleeve.id) && !isSleeveEquipped(sleeve.id)">
+                <span class="sleeve-unlocked-lbl">Adquirido ✓</span>
+              </div>
+
+              <!-- Acciones de Funda -->
+              <button 
+                class="btn-buy-sleeve" 
+                *ngIf="!hasSleeve(sleeve.id)"
+                (click)="buySleeve(sleeve)" 
+                [disabled]="buying || (profile.monedas || 0) < sleeve.cost"
+                [style.background]="sleeve.accentColor"
+              >
+                <span>Desbloquear</span>
+              </button>
+
+              <button 
+                class="btn-equip-sleeve" 
+                *ngIf="hasSleeve(sleeve.id) && !isSleeveEquipped(sleeve.id)"
+                (click)="equipSleeve(sleeve)"
+                [disabled]="buying"
+              >
+                <span>Equipar</span>
+              </button>
+
+              <button 
+                class="btn-equipped-sleeve" 
+                *ngIf="isSleeveEquipped(sleeve.id)"
+                disabled
+              >
+                <span>Equipado 🌟</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== VISTA 2: CINEMÁTICA DE APERTURA (RIPPING) ==================== -->
+    <div class="pack-ripping-view" *ngIf="state === 'ripping' && selectedPack">
+      <div class="ripping-overlay-glow"></div>
+      
+      <div class="ripping-content-box">
+        <h2 class="opening-banner-title">Abriendo {{ selectedPack.name }}</h2>
+        <p class="opening-banner-subtitle">¡Toca el sobre holográfico para desgarrarlo y revelar las cartas!</p>
+        
+        <!-- Envoltorio del sobre 3D -->
+        <div class="booster-wrapper-3d" (click)="ripPack()" [class.is-ripped]="packRipped">
+          <div class="booster-foil-packet" [style.background]="selectedPack.bgGradient">
+            <div class="packet-shimmer"></div>
+            
+            <!-- Mitad Superior del Sobre (se desplaza arriba) -->
+            <div class="packet-half packet-top">
+              <div class="crimp-edge"></div>
+              <div class="logo-area">
+                <span class="p-logo-tcg">Pokémon TCG</span>
+              </div>
+            </div>
+            
+            <!-- Centro con el elemento -->
+            <div class="packet-center-art">
+              <div class="glowing-orb" [style.box-shadow]="'0 0 40px ' + selectedPack.accentColor">
+                <span class="orb-symbol" *ngIf="selectedPack.id === 'planta'">🍃</span>
+                <span class="orb-symbol" *ngIf="selectedPack.id === 'fuego'">🔥</span>
+                <span class="orb-symbol" *ngIf="selectedPack.id === 'agua'">🌊</span>
+                <span class="orb-symbol" *ngIf="selectedPack.id === 'trueno'">⚡</span>
+                <span class="orb-symbol" *ngIf="selectedPack.id === 'legends'">🌌</span>
+              </div>
+            </div>
+            
+            <!-- Mitad Inferior (se desplaza abajo) -->
+            <div class="packet-half packet-bottom">
+              <div class="logo-sub">BOOSTER PACK - 5 CARDS</div>
+              <div class="crimp-edge"></div>
+            </div>
+          </div>
+          
+          <!-- Efecto de chispas/fuerza al romper -->
+          <div class="tear-sparkles-effect" *ngIf="packRipped"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VISTA 3: VOLTEO DE CARTAS (REVEALING) ==================== -->
+    <div class="cards-revealing-view" *ngIf="state === 'revealing'">
+      
+      <!-- Controles de la parte superior -->
+      <div class="revealing-actions-row">
+        <div class="rev-title-left">
+          <h2 class="cards-rev-title">Cartas Extraídas</h2>
+          <p class="cards-rev-subtitle">Haz clic en cada una de las 5 cartas holográficas para voltearlas en 3D.</p>
+        </div>
+        
+        <button class="btn-reveal-all" (click)="flipAll()" *ngIf="!allFlipped">
+          <span>Voltear Todo</span>
+        </button>
+      </div>
+
+      <!-- Cuadrícula de Cartas Flips -->
+      <div class="reveal-cards-grid">
+        <div 
+          class="booster-card-flip-container" 
+          *ngFor="let card of openedCards; let idx = index"
+          (click)="flipCard(idx)"
+          [class.is-flipped]="card.flipped"
+        >
+          <div class="card-flip-inner">
+            
+            <!-- LADO TRASERO (BOCA ABAJO) -->
+            <div class="card-face-side side-back">
+              <div class="tcg-back-pattern">
+                <div class="cyber-orb-center">
+                  <div class="cyber-pokeball"></div>
+                </div>
+                <div class="traces-bg"></div>
+              </div>
+            </div>
+            
+            <!-- LADO DELANTERO (BOCA ARRIBA) -->
+            <div 
+              class="card-face-side side-front" 
+              [class.rarity-comun]="card.rareza === 'Común'"
+              [class.rarity-rara]="card.rareza === 'Rara'"
+              [class.rarity-epica]="card.rareza === 'Épica'"
+              [class.rarity-legendaria]="card.rareza === 'Legendaria'"
+            >
+              <!-- Aura por rareza -->
+              <div class="rarity-foil-shimmer" *ngIf="card.rareza === 'Legendaria' || card.rareza === 'Épica'"></div>
+              
+              <!-- Detalle de Carta -->
+              <div class="opened-card-layout">
+                <div class="card-header-rev">
+                  <span class="card-name-rev">{{ card.nombre }}</span>
+                  <span class="card-type-tag-rev" [ngClass]="'c-tag-' + card.tipo.toLowerCase()">{{ card.tipo }}</span>
+                </div>
+                
+                <div class="card-img-rev">
+                  <img [src]="card.imagen" [alt]="card.nombre">
+                </div>
+
+                <div class="card-stats-rev">
+                  <div class="stat-bubble life">HP <span>{{ card.vida }}</span></div>
+                  <div class="stat-bubble atk">ATK <span>{{ card.ataque }}</span></div>
+                  <div class="stat-bubble def">DEF <span>{{ card.defensa }}</span></div>
+                </div>
+
+                <div class="card-skills-rev" *ngIf="card.habilidad">
+                  <span class="skills-title-rev">Habilidad Táctica</span>
+                  <p class="skills-desc-rev">{{ card.habilidad }}</p>
+                </div>
+                
+                <div class="card-rarity-badge-rev">
+                  <span>{{ card.rareza }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer al voltear todo -->
+      <footer class="revealing-footer" *ngIf="allFlipped">
+        <div class="congrats-panel">
+          <p class="congrats-txt">🎉 ¡Excelente tirada! Las cartas se han incorporado con éxito a tu colección de entrenador.</p>
+          <button class="btn-return-shop-gold" (click)="resetShop()">
+            <span>Volver a la Tienda</span>
+          </button>
+        </div>
+      </footer>
+
+    </div>
+
+  </div>
+</div>

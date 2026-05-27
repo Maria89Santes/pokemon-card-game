@@ -1,0 +1,69 @@
+<div 
+  class="card-container" 
+  [ngClass]="[getTypeClass(card.tipo), getRarityClass(card.rareza)]"
+  [class.hovered]="isHovered"
+  (mousemove)="onMouseMove($event)"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
+  [style.--rx]="rotateX"
+  [style.--ry]="rotateY"
+  [style.--mx]="glareX + '%'"
+  [style.--my]="glareY + '%'"
+>
+  <!-- Fondo de resplandor sutil -->
+  <div class="card-glow"></div>
+  
+  <!-- Brillo holográfico interactivo para cartas legendarias o épicas -->
+  <div class="holo-shine" *ngIf="card.rareza === 'Legendaria' || card.rareza === 'Épica'"></div>
+  
+  <!-- Encabezado de la carta: Nombre y Vida -->
+  <div class="card-header">
+    <span class="card-name">{{ card.nombre }}</span>
+    <div class="card-hp">
+      <span class="hp-label">HP</span>
+      <span class="hp-value">{{ card.vida }}</span>
+    </div>
+  </div>
+
+  <!-- Caja de la Imagen con su Tipo y Rareza -->
+  <div class="card-image-box">
+    <img [src]="card.imagen" [alt]="card.nombre" class="card-image" loading="lazy">
+    
+    <div class="card-badges">
+      <span class="badge-type">{{ card.tipo }}</span>
+      <span class="badge-rarity" [ngClass]="'rare-' + card.rareza.toLowerCase()">{{ card.rareza }}</span>
+    </div>
+  </div>
+
+  <!-- Estadísticas: Ataque y Defensa con barra de progreso -->
+  <div class="card-stats">
+    <div class="stat-item">
+      <span class="stat-label">ATAQUE</span>
+      <div class="stat-bar-bg">
+        <div class="stat-bar atk-bar" [style.width.%]="(card.ataque / 150) * 100"></div>
+      </div>
+      <span class="stat-value">{{ card.ataque }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">DEFENSA</span>
+      <div class="stat-bar-bg">
+        <div class="stat-bar def-bar" [style.width.%]="(card.defensa / 150) * 100"></div>
+      </div>
+      <span class="stat-value">{{ card.defensa }}</span>
+    </div>
+  </div>
+
+  <!-- Detalle de Habilidad -->
+  <div class="card-ability" *ngIf="card.habilidad">
+    <div class="ability-title">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+      <span>HABILIDAD</span>
+    </div>
+    <p class="ability-desc">{{ card.habilidad }}</p>
+  </div>
+
+  <!-- Descripción Literaria / Flavor Text -->
+  <p class="card-flavor" *ngIf="card.descripcion">{{ card.descripcion }}</p>
+</div>

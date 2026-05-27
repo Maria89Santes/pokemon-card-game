@@ -1,0 +1,469 @@
+<app-navbar></app-navbar>
+
+<!-- Pantalla de Carga de Estado / Servidor -->
+<div class="loading-overlay" *ngIf="state === 'loading'">
+  <span class="spinner-large"></span>
+  <p>{{ loadingMessage }}</p>
+</div>
+
+<!-- Pantalla de Combate Principal -->
+<div class="battle-page" *ngIf="state !== 'loading' && mazo">
+  
+  <!-- Partículas Animadas de Fondo (Inmersión Premium) -->
+  <div class="battle-bg-particles">
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+    <div class="particle p3"></div>
+    <div class="particle p4"></div>
+    <div class="particle p5"></div>
+    <div class="particle p6"></div>
+    <div class="particle p7"></div>
+    <div class="particle p8"></div>
+  </div>
+
+  <!-- Banner cinemático gigante de transición de turno -->
+  <div class="turn-banner-overlay" *ngIf="showTurnBanner" [class.player-banner]="state === 'player_turn'" [class.cpu-banner]="state === 'cpu_turn'">
+    <div class="turn-banner-content">
+      <div class="banner-glow"></div>
+      <h2 class="banner-title">{{ turnBannerText }}</h2>
+    </div>
+  </div>
+
+  <!-- Splash cinemático gigante de LEVEL UP -->
+  <div class="level-up-overlay" *ngIf="showLevelUpSplash" (click)="showLevelUpSplash = false">
+    <div class="level-up-card">
+      <div class="sparkles-container">
+        <div class="sparkle sp1"></div>
+        <div class="sparkle sp2"></div>
+        <div class="sparkle sp3"></div>
+      </div>
+      <div class="level-up-icon">⭐</div>
+      <h1 class="level-up-title">¡SUBIDA DE NIVEL!</h1>
+      <p class="level-up-desc">¡Felicidades! Has demostrado una excelente estrategia en la arena.</p>
+      <div class="new-level-badge">Nivel {{ supabaseService.userProfileSignal()?.nivel }}</div>
+      <p class="new-level-title">Rango: {{ getPlayerRankTitle(supabaseService.userProfileSignal()?.nivel || 1) }}</p>
+      <button class="btn-level-up-confirm" (click)="showLevelUpSplash = false">Continuar</button>
+    </div>
+  </div>
+
+  <div class="battle-container">
+
+    <!-- Fila A: Tablero de Juego (Grilla Central) -->
+    <div class="battle-workspace">
+
+      <!-- COLUMNA IZQUIERDA: Info & Bitácora de Batalla -->
+      <aside class="battle-sidebar">
+        <!-- Tarjeta de Mazo & Combate -->
+        <div class="sidebar-box info-box">
+          <h3 class="box-title">Arena de Batalla</h3>
+          <div class="match-info-row">
+            <span class="lbl">Mazo Utilizado:</span>
+            <span class="val text-cyan">{{ mazo.nombre }}</span>
+          </div>
+          <div class="match-info-row">
+            <span class="lbl">Modo:</span>
+            <span class="val text-gold">{{ isPvP ? 'Online PvP ⚔️' : 'vs IA (CPU)' }}</span>
+          </div>
+          <div class="surrender-btn-container" style="margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px;">
+            <button class="btn-surrender" (click)="confirmSurrender()" style="width: 100%; padding: 8px 12px; background: rgba(255, 23, 68, 0.12); border: 1px solid var(--accent-red); color: var(--accent-red); font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 23, 68, 0.25)'; this.style.boxShadow='0 0 10px rgba(255, 23, 68, 0.3)'" onmouseout="this.style.background='rgba(255, 23, 68, 0.12)'; this.style.boxShadow='none'">
+              <span>Abandonar Partida 🏳️</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bitácora de Batalla (Logs Scroll) -->
+        <div class="sidebar-box logs-box">
+          <h3 class="box-title">Historial de Combate</h3>
+          <div class="battle-logs-scroll" id="battle-logs-panel">
+            <div class="log-message" *ngFor="let log of logs">
+              {{ log }}
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- COLUMNA CENTRAL: Campo de Batalla / Battlefield -->
+      <main class="battlefield">
+        
+        <!-- ==================== A. ÁREA CPU (ENEMIGO) ==================== -->
+        <div class="player-zone cpu-zone">
+          <div class="zone-header">
+            <div class="header-left">
+              <span class="player-label text-red">{{ isPvP ? opponentUsername : 'CPU (Rival)' }}</span>
+              <div class="cpu-deck-indicator">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line></svg>
+                <span>Mazo: {{ cpuDeck.length }}</span>
+              </div>
+            </div>
+            <!-- Mano oculta de CPU -->
+            <div class="cpu-hand-hidden">
+              <div class="cpu-card-back" *ngFor="let card of cpuHand"></div>
+            </div>
+          </div>
+
+          <!-- Pokémon Activo CPU Arena -->
+          <div class="active-arena-slot cpu-slot">
+            <div class="empty-active-msg" *ngIf="!cpuActive">
+              <p>Esperando invocación de {{ isPvP ? opponentUsername : 'la CPU' }}...</p>
+            </div>
+            
+            <!-- Carta Activa CPU -->
+            <div class="active-combat-card-box" *ngIf="cpuActive"
+                 [attr.data-type]="cpuActive.tipo"
+                 [class.attack-dash]="cpuAttacking"
+                 [class.shake-damage]="cpuDamaged"
+                 [class.fainted-card]="cpuActive.currentHp <= 0"
+                 [class.status-poisoned]="cpuStatus === 'poisoned'"
+                 [class.status-burned]="cpuStatus === 'burned'"
+                 [class.status-paralyzed]="cpuStatus === 'paralyzed'">
+              
+              <!-- Popup de Daño -->
+              <div class="damage-popup-txt" *ngIf="cpuDamagePopup">{{ cpuDamagePopup }}</div>
+
+              <!-- Indicador de Escudo Activo -->
+              <span class="active-shield-badge" *ngIf="cpuShieldActive">🛡️ Escudo Activo</span>
+
+              <!-- VFX de Partículas Elementales del Atacante -->
+              <div class="elemental-attack-overlay" *ngIf="cpuDamaged && playerActive" [attr.data-attacker-type]="playerActive.tipo">
+                <div class="vfx-particle vp1"></div>
+                <div class="vfx-particle vp2"></div>
+                <div class="vfx-particle vp3"></div>
+                <div class="vfx-particle vp4"></div>
+                <div class="vfx-particle vp5"></div>
+              </div>
+
+              <!-- Cabecera de Vida -->
+              <div class="combat-card-header">
+                <span class="cc-name">{{ cpuActive.nombre }}</span>
+                <div class="cc-hp-row" style="display: flex; align-items: center; gap: 6px;">
+                  <!-- Distintivos de Estado Alterado -->
+                  <span class="status-badge poison-badge" *ngIf="cpuStatus === 'poisoned'">VEN</span>
+                  <span class="status-badge burn-badge" *ngIf="cpuStatus === 'burned'">QMA</span>
+                  <span class="status-badge paralysis-badge" *ngIf="cpuStatus === 'paralyzed'">PAR</span>
+                  
+                  <div class="cc-hp">
+                    <span class="cc-hp-lbl">HP</span>
+                    <span class="cc-hp-val">{{ cpuActive.currentHp }}/{{ cpuActive.vida }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="hp-bar-outer">
+                <div class="hp-bar-inner" 
+                     [style.width.%]="(cpuActive.currentHp / cpuActive.vida) * 100"
+                     [ngClass]="getHpBarColor(cpuActive.currentHp, cpuActive.vida)">
+                </div>
+              </div>
+
+              <!-- Mini Visual del Pokémon -->
+              <div class="combat-card-image">
+                <img [src]="cpuActive.imagen" [alt]="cpuActive.nombre">
+                <span class="cc-type-badge">{{ cpuActive.tipo }}</span>
+              </div>
+
+              <!-- Estadísticas & Energía de CPU -->
+              <div class="combat-card-stats-row">
+                <div class="combat-card-stats">
+                  <span>ATK: <strong>{{ cpuActive.ataque }}</strong></span>
+                  <span>DEF: <strong>{{ cpuActive.defensa }}</strong></span>
+                </div>
+                
+                <div class="cpu-energy-counter" [class.energy-pulse]="cpuEnergyCharged">
+                  <span class="n-val">{{ cpuEnergy }}</span>
+                  <span class="lbl-val">ENE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banca de Combate CPU -->
+          <div class="bench-zone cpu-bench-zone">
+            <div class="bench-slot-neon" *ngFor="let card of cpuBench">
+              <div class="bench-card-mini">
+                <div class="mini-card-header">
+                  <span class="mini-name">{{ card.nombre }}</span>
+                  <span class="mini-hp">{{ card.currentHp }}/{{ card.vida }} HP</span>
+                </div>
+                <img [src]="card.imagen" class="mini-thumb" [alt]="card.nombre">
+              </div>
+            </div>
+            <!-- Slots vacíos para completar 3 slots si procede -->
+            <div class="bench-slot-neon empty-bench-slot" *ngFor="let item of [].constructor(3 - cpuBench.length)">
+              <span class="empty-icon-slot">RESERVA CPU</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== VS / PANEL DE CONTROL TURNOS ==================== -->
+        <div class="vs-divider-row">
+          <div class="vs-line"></div>
+          
+          <div class="vs-control-panel">
+            <div class="turn-indicator" [class.player-turn]="state === 'player_turn'" [class.cpu-turn]="state === 'cpu_turn'">
+              <span *ngIf="state === 'player_turn'">🔥 TU TURNO 🔥</span>
+              <span *ngIf="state === 'cpu_turn'">⚡ TURNO DE {{ isPvP ? opponentUsername.toUpperCase() : 'EL RIVAL' }} ⚡</span>
+              <span *ngIf="state === 'selecting_active'">⚔️ SELECCIÓN ACTIVA ⚔️</span>
+            </div>
+            <button class="btn-end-turn" 
+                    [disabled]="state !== 'player_turn' || !playerActive" 
+                    (click)="endPlayerTurn()">
+              Terminar Turno
+            </button>
+          </div>
+          
+          <div class="vs-line"></div>
+        </div>
+
+        <!-- ==================== B. ÁREA JUGADOR ==================== -->
+        <div class="player-zone player-zone-bottom">
+          
+          <!-- Pokémon Activo Jugador Arena -->
+          <div class="active-arena-slot player-slot">
+            <div class="empty-active-msg cursor-pulse" *ngIf="!playerActive && state === 'player_turn'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bounce"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <p>¡Invoca a un Pokémon de tu mano para combatir!</p>
+            </div>
+            
+            <div class="empty-active-msg" *ngIf="!playerActive && state === 'selecting_active'">
+              <p>Elige tu Pokémon Activo inicial desde tu mano abajo...</p>
+            </div>
+
+            <!-- Carta Activa Jugador -->
+            <div class="active-combat-card-box active-player-card" *ngIf="playerActive"
+                 [attr.data-type]="playerActive.tipo"
+                 [class.attack-dash]="playerAttacking"
+                 [class.shake-damage]="playerDamaged"
+                 [class.fainted-card]="playerActive.currentHp <= 0"
+                 [class.status-poisoned]="playerStatus === 'poisoned'"
+                 [class.status-burned]="playerStatus === 'burned'"
+                 [class.status-paralyzed]="playerStatus === 'paralyzed'">
+              
+              <!-- Popup de Daño -->
+              <div class="damage-popup-txt player-pop" *ngIf="playerDamagePopup">{{ playerDamagePopup }}</div>
+
+              <!-- Indicador de Escudo Activo -->
+              <span class="active-shield-badge player-badge" *ngIf="playerShieldActive">🛡️ Escudo Activo</span>
+
+              <!-- VFX de Partículas Elementales del Atacante (CPU / Rival) -->
+              <div class="elemental-attack-overlay" *ngIf="playerDamaged && cpuActive" [attr.data-attacker-type]="cpuActive.tipo">
+                <div class="vfx-particle vp1"></div>
+                <div class="vfx-particle vp2"></div>
+                <div class="vfx-particle vp3"></div>
+                <div class="vfx-particle vp4"></div>
+                <div class="vfx-particle vp5"></div>
+              </div>
+
+              <!-- Cabecera de Vida -->
+              <div class="combat-card-header">
+                <span class="cc-name">{{ playerActive.nombre }}</span>
+                <div class="cc-hp-row" style="display: flex; align-items: center; gap: 6px;">
+                  <!-- Distintivos de Estado Alterado -->
+                  <span class="status-badge poison-badge" *ngIf="playerStatus === 'poisoned'">VEN</span>
+                  <span class="status-badge burn-badge" *ngIf="playerStatus === 'burned'">QMA</span>
+                  <span class="status-badge paralysis-badge" *ngIf="playerStatus === 'paralyzed'">PAR</span>
+                  
+                  <div class="cc-hp">
+                    <span class="cc-hp-lbl">HP</span>
+                    <span class="cc-hp-val">{{ playerActive.currentHp }}/{{ playerActive.vida }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="hp-bar-outer">
+                <div class="hp-bar-inner" 
+                     [style.width.%]="(playerActive.currentHp / playerActive.vida) * 100"
+                     [ngClass]="getHpBarColor(playerActive.currentHp, playerActive.vida)">
+                </div>
+              </div>
+
+              <!-- Mini Visual -->
+              <div class="combat-card-image">
+                <img [src]="playerActive.imagen" [alt]="playerActive.nombre">
+                <span class="cc-type-badge">{{ playerActive.tipo }}</span>
+              </div>
+
+              <!-- Estadísticas -->
+              <div class="combat-card-stats">
+                <span>ATK: <strong>{{ playerActive.ataque }}</strong></span>
+                <span>DEF: <strong>{{ playerActive.defensa }}</strong></span>
+              </div>
+
+              <!-- Controles de Ataque del Pokémon Activo -->
+              <div class="active-combat-controls">
+                <div class="energy-bubble-count" [class.energy-pulse]="energyCharged">
+                  <span class="energy-number">{{ playerEnergy }}</span>
+                  <span class="energy-lbl">ENERGÍA</span>
+                </div>
+                
+                <button class="btn-attack-action" 
+                        [disabled]="state !== 'player_turn' || playerEnergy < 1 || !cpuActive" 
+                        (click)="playerAttack()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  <span>Atacar</span>
+                </button>
+
+                <!-- Botón Defender (IA Rúbrica) -->
+                <button class="btn-defend-action" 
+                        [disabled]="state !== 'player_turn' || playerEnergy < 1" 
+                        (click)="playerDefend()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  <span>Defender</span>
+                </button>
+
+                <!-- Botón Habilidad (IA Rúbrica) -->
+                <button class="btn-ability-action" 
+                        [disabled]="state !== 'player_turn' || playerEnergy < 1 || playerAbilityUsedThisTurn" 
+                        (click)="usePlayerAbility()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <span>Habilidad</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banca de Combate Jugador -->
+          <div class="bench-zone player-bench-zone">
+            <div class="bench-slot-neon" *ngFor="let card of playerBench; let idx = index">
+              <div class="bench-card-mini">
+                <div class="mini-card-header">
+                  <span class="mini-name">{{ card.nombre }}</span>
+                  <span class="mini-hp">{{ card.currentHp }}/{{ card.vida }} HP</span>
+                </div>
+                <img [src]="card.imagen" class="mini-thumb" [alt]="card.nombre">
+                
+                <!-- Acciones interactiva de Banca -->
+                <div class="bench-mini-controls">
+                  <!-- Retirar: Intercambia el activo con esta reserva por 1 de energía -->
+                  <button class="btn-bench-action retreat-btn" 
+                          *ngIf="state === 'player_turn' && playerActive && playerEnergy >= 1 && playerStatus !== 'paralyzed'"
+                          (click)="retreatActive(idx)"
+                          title="Retirada táctica (Costo: 1 Energía)">
+                    🔄 Retirar
+                  </button>
+                  
+                  <!-- Promover: Si el activo faimtó y este está vivo, promover -->
+                  <button class="btn-bench-action promote-btn" 
+                          *ngIf="!playerActive && card.currentHp > 0"
+                          (click)="promoteFromBench(idx)"
+                          title="Ascender a Pokémon Activo">
+                    ⚔️ Activar
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Slots vacíos -->
+            <div class="bench-slot-neon empty-bench-slot" *ngFor="let item of [].constructor(3 - playerBench.length)">
+              <span class="empty-icon-slot">RESERVA JUGADOR</span>
+            </div>
+          </div>
+
+          <!-- Cabecera de Mano e Info -->
+          <div class="zone-header">
+            <div class="header-left">
+              <span class="player-label text-cyan">Tus Cartas (Jugador)</span>
+              <div class="cpu-deck-indicator">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line></svg>
+                <span>Mazo: {{ playerDeck.length }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mano del Jugador -->
+          <div class="player-hand-row">
+            <div class="empty-hand-alert" *ngIf="playerHand.length === 0">
+              <span>No te quedan cartas en tu mano.</span>
+            </div>
+            
+            <!-- Cartas en Mano -->
+            <div class="hand-card-container" 
+                 *ngFor="let card of playerHand" 
+                 [class.clickable]="state === 'selecting_active' || state === 'player_turn'">
+              
+              <!-- Mini vista de la carta -->
+              <div class="hand-card-content">
+                <div class="hc-header">
+                  <span class="hc-name">{{ card.nombre }}</span>
+                  <span class="hc-hp">{{ card.vida }} HP</span>
+                </div>
+                <div class="hc-img">
+                  <img [src]="card.imagen" [alt]="card.nombre">
+                </div>
+                <div class="hc-stats">
+                  <span>A:{{ card.ataque }}</span>
+                  <span>D:{{ card.defensa }}</span>
+                </div>
+              </div>
+
+              <!-- Invocación overlay -->
+              <div class="hand-card-overlay" *ngIf="state === 'selecting_active' || state === 'player_turn'">
+                <button class="btn-invoke-hand" *ngIf="!playerActive" (click)="selectActive(card)">Activar</button>
+                <button class="btn-invoke-hand bench-btn" *ngIf="playerActive && playerBench.length < 3" (click)="playToBench(card)">Banca</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Pantalla Game Over Overlay (Loot/Rewards Premium) -->
+<div class="modal-overlay game-over-overlay" *ngIf="state === 'game_over'">
+  <div class="modal-content game-over-card" [class.won-card]="winner === 'player'" [class.lost-card]="winner === 'cpu'">
+    
+    <div class="game-over-icon" *ngIf="winner === 'player'">
+      🏆
+    </div>
+    <div class="game-over-icon" *ngIf="winner === 'cpu'">
+      💀
+    </div>
+
+    <h2 class="go-title" *ngIf="winner === 'player'">¡VICTORIA EN LA ARENA!</h2>
+    <h2 class="go-title" *ngIf="winner === 'cpu'">¡DERROTA EN LA ARENA!</h2>
+    
+    <p class="go-desc" *ngIf="winner === 'player'">
+      {{ isPvP ? 'Has derrotado a tu oponente con una gran estrategia de batalla. ¡Sigue así, Entrenador!' : 'Has derrotado a la CPU con una gran estrategia de batalla. ¡Sigue así, Entrenador!' }}
+    </p>
+    <p class="go-desc" *ngIf="winner === 'cpu'">
+      Tu Pokémon fue debilitado y no te quedaron más fuerzas para luchar. ¡Entrena y vuelve a intentarlo!
+    </p>
+
+    <!-- Barra de Progreso de Experiencia Cinematográfica -->
+    <div class="go-rewards-xp-box">
+      <div class="xp-metrics">
+        <span class="xp-metrics-lvl">NIVEL {{ supabaseService.userProfileSignal()?.nivel }}</span>
+        <span class="xp-metrics-rank text-gold">{{ getPlayerRankTitle(supabaseService.userProfileSignal()?.nivel || 1) }}</span>
+      </div>
+      <div class="rewards-xp-bar-bg">
+        <div class="rewards-xp-bar-fill" [style.width.%]="(supabaseService.userProfileSignal()?.total_xp || 0) % 100">
+          <span class="xp-float-percentage">{{ (supabaseService.userProfileSignal()?.total_xp || 0) % 100 }}/100 XP</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="go-rewards">
+      <h3 class="rewards-title">Resultados de Batalla</h3>
+      <div class="reward-row" *ngIf="winner === 'player'">
+        <span class="reward-lbl">Recompensa:</span>
+        <span class="reward-val text-gold">+100 XP de Experiencia</span>
+      </div>
+      <div class="reward-row" *ngIf="winner === 'cpu'">
+        <span class="reward-lbl">Consolación:</span>
+        <span class="reward-val text-red">+20 XP de Experiencia</span>
+      </div>
+      <div class="reward-row">
+        <span class="reward-lbl">Estado de Perfil:</span>
+        <span class="reward-val text-cyan">Estadísticas actualizadas</span>
+      </div>
+    </div>
+
+    <div class="go-actions">
+      <button class="btn-go-action" routerLink="/decks">Volver a Mazos</button>
+      <button class="btn-go-action secondary" routerLink="/dashboard">Ver Colección</button>
+    </div>
+
+  </div>
+</div>

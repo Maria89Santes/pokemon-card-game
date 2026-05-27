@@ -1,0 +1,330 @@
+<app-navbar></app-navbar>
+
+<div class="dashboard-page" *ngIf="profile">
+  <div class="dashboard-container">
+    
+    <!-- Encabezado de Bienvenida (Premium Banner) -->
+    <header class="dashboard-header">
+      <div class="welcome-box">
+        <div class="welcome-header-top">
+          <h1 class="welcome-title">¡Al ruedo, {{ profile.username }}! ⚔&zwj;️</h1>
+          <div class="level-badge-premium">{{ playerRankTitle }}</div>
+        </div>
+        <p class="welcome-subtitle">Construye tu colección, gestiona tus mazos y entra en la arena cibernética.</p>
+      </div>
+    </header>
+
+    <!-- Sección de Actividad e Inteligencia del Entrenador (Fase 4 Layout) -->
+    <section class="activity-workspace">
+      
+      <!-- COLUMNA PRINCIPAL: Estadísticas e Historial (Izquierda) -->
+      <div class="activity-main-column">
+        <h2 class="section-title-sub">Tu Estado de Combate</h2>
+        
+        <div class="stats-grid-premium">
+          <!-- Tarjeta Grande: Detalle del Entrenador -->
+          <div class="stat-cardplayer player-summary-premium">
+            <div class="card-glow-premium"></div>
+            
+            <div class="player-avatar-large-premium">
+              <img [src]="profile.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + profile.username" alt="Avatar">
+            </div>
+            
+            <div class="player-details-premium">
+              <span class="player-rank-premium">RANGO ENTRENADOR</span>
+              <span class="player-username-premium">{{ profile.username }}</span>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div class="level-badge-premium-box" style="margin-bottom: 0;">NIVEL {{ profile.nivel }}</div>
+                <div class="coins-badge-premium-box" style="display: flex; align-items: center; gap: 6px; background: rgba(255, 214, 0, 0.12); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; box-shadow: 0 0 10px rgba(255, 214, 0, 0.15);">
+                  <span class="c-coin-icon" style="filter: drop-shadow(0 0 4px rgba(255, 214, 0, 0.5));">🪙</span>
+                  <span class="c-coin-val">{{ profile.monedas || 0 }} MONEDAS</span>
+                </div>
+              </div>
+              
+              <div class="xp-progress-box-premium">
+                <div class="xp-header-row-premium">
+                  <span class="xp-label-premium">EXPERIENCIA</span>
+                  <span class="xp-val-premium">{{ currentXpProgress }}/100 XP</span>
+                </div>
+                <div class="xp-bar-large-bg-premium">
+                  <div class="xp-bar-large-premium" [style.width.%]="currentXpProgress"></div>
+                </div>
+                <span class="xp-total-subtitle-premium">XP acumulada total: {{ profile.total_xp }}</span>
+              </div>
+            </div>
+            
+            <!-- Funda Equipada Preview -->
+            <div class="sleeve-profile-preview">
+              <span class="sleeve-preview-lbl">Funda Activa</span>
+              <div class="sleeve-foil-card animate-pulse" [ngClass]="profile.reverso_equipado || 'default'">
+                <div class="sleeve-shimmer"></div>
+                <div class="sleeve-pokeball-art"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini Stats Grid -->
+          <div class="mini-stats-grid">
+            <!-- Victorias -->
+            <div class="stat-card-premium wins-card-premium">
+              <div class="stat-icon-premium icon-wins-premium">🏆</div>
+              <div class="stat-info-premium">
+                <span class="stat-card-label-premium">Victorias</span>
+                <span class="stat-card-value-premium text-gold">{{ profile.victorias }}</span>
+              </div>
+            </div>
+
+            <!-- Derrotas -->
+            <div class="stat-card-premium losses-card-premium">
+              <div class="stat-icon-premium icon-losses-premium">💀</div>
+              <div class="stat-info-premium">
+                <span class="stat-card-label-premium">Derrotas</span>
+                <span class="stat-card-value-premium text-red">{{ profile.derrotas }}</span>
+              </div>
+            </div>
+
+            <!-- Winrate -->
+            <div class="stat-card-premium winrate-card-premium">
+              <div class="stat-icon-premium icon-winrate-premium">⚡</div>
+              <div class="stat-info-premium">
+                <span class="stat-card-label-premium">Winrate</span>
+                <span class="stat-card-value-premium text-cyan">{{ winrate }}%</span>
+                <span class="stat-card-sub-premium text-muted">De {{ totalGames }} duelos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial de Batallas Recientes -->
+        <div class="recent-battles-box">
+          <h3 class="box-title-dashboard">Historial de Combates</h3>
+          
+          <div class="empty-history-alert" *ngIf="recentBattles.length === 0">
+            <p>Aún no has disputado ningún combate en la arena.</p>
+          </div>
+
+          <div class="battles-history-list" *ngIf="recentBattles.length > 0">
+            <div class="battle-history-item" *ngFor="let battle of recentBattles" 
+                 [class.win-item]="battle.ganador_id !== null" 
+                 [class.lose-item]="battle.ganador_id === null">
+              
+              <div class="b-result-badge" [class.win-badge]="battle.ganador_id !== null" [class.lose-badge]="battle.ganador_id === null">
+                {{ battle.ganador_id !== null ? 'VICTORIA' : 'DERROTA' }}
+              </div>
+              
+              <div class="b-details">
+                <span class="b-mode">
+                  {{ battle.modo === 'online' ? 'Duelo en Línea (PvP)' : 'Duelo vs CPU (Arena IA)' }}
+                  <span class="storage-tag" [class.local-tag]="battle.isLocal" [class.remote-tag]="!battle.isLocal">
+                    {{ battle.isLocal ? 'SQLite Local' : 'Supabase' }}
+                  </span>
+                </span>
+                <span class="b-date">{{ battle.created_at | date:'dd/MM/yyyy, hh:mm a' }}</span>
+              </div>
+
+              <div class="b-rewards-gain">
+                <span class="xp-gain" [class.text-gold]="battle.ganador_id !== null" [class.text-red]="battle.ganador_id === null">
+                  {{ battle.ganador_id !== null ? '+100 XP' : '+20 XP' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA LATERAL: Misiones y Favoritos (Derecha) -->
+      <aside class="activity-sidebar-column">
+        
+        <!-- Panel de Misiones Diarias Dinámicas -->
+        <div class="sidebar-box-dashboard missions-box">
+          <h3 class="box-title-dashboard">Misiones del Día 📜</h3>
+          <p class="box-subtitle-dashboard">Completa desafíos diarios para conseguir monedas de oro virtuales.</p>
+          
+          <div class="missions-list">
+            <div class="mission-item" *ngFor="let m of dailyMissions" 
+                 [class.mission-done]="m.completado" 
+                 [class.mission-claimed]="m.reclamado">
+              
+              <div class="mission-top-row">
+                <div class="mission-check-circle" [class.checked]="m.completado">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" *ngIf="m.completado">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div class="mission-text-details">
+                  <span class="mission-title-text">{{ m.titulo }}</span>
+                  <p class="mission-desc-text">{{ m.desc }}</p>
+                </div>
+              </div>
+
+              <!-- Barra de progreso e info de recompensa -->
+              <div class="mission-progress-row" *ngIf="!m.reclamado">
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" [style.width.%]="(m.progreso / m.objetivo) * 100"></div>
+                </div>
+                <span class="progress-fraction-label">{{ m.progreso }}/{{ m.objetivo }}</span>
+              </div>
+
+              <div class="mission-action-row">
+                <!-- Recompensa -->
+                <span class="m-reward-badge" *ngIf="!m.reclamado">🪙 {{ m.recompensa }}</span>
+                <span class="m-claimed-badge" *ngIf="m.reclamado">💰 Reclamado</span>
+                
+                <!-- Botón reclamar -->
+                <button class="btn-claim-reward-premium" 
+                        *ngIf="m.completado && !m.reclamado" 
+                        (click)="claimReward('misiones', m.id)">
+                  Reclamar
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel de Logros de Entrenador -->
+        <div class="sidebar-box-dashboard achievements-box" style="margin-top: 24px;">
+          <h3 class="box-title-dashboard">Logros de Entrenador 🏆</h3>
+          <p class="box-subtitle-dashboard">Milestones a lo largo de tu trayectoria como maestro de cartas.</p>
+          
+          <div class="achievements-list">
+            <div class="achievement-item" *ngFor="let l of achievements" 
+                 [class.achievement-done]="l.completado" 
+                 [class.achievement-claimed]="l.reclamado">
+              
+              <div class="achievement-header">
+                <span class="achievement-title">{{ l.titulo }}</span>
+                <span class="achievement-reward-tag">🪙 {{ l.recompensa }}</span>
+              </div>
+              <p class="achievement-desc">{{ l.desc }}</p>
+
+              <!-- Barra de progreso -->
+              <div class="achievement-progress-row" *ngIf="!l.reclamado">
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill-achievement" [style.width.%]="(l.progreso / l.objetivo) * 100"></div>
+                </div>
+                <span class="progress-fraction-label">{{ l.progreso }}/{{ l.objetivo }}</span>
+              </div>
+
+              <!-- Reclamo -->
+              <div class="achievement-claim-row" *ngIf="l.completado && !l.reclamado">
+                <button class="btn-claim-reward-premium achievement-btn" (click)="claimReward('logros', l.id)">
+                  Reclamar Logro
+                </button>
+              </div>
+
+              <div class="achievement-claimed-msg" *ngIf="l.reclamado">
+                <span>💰 Completado y cobrado</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de Pokémon Destacados / Favoritos -->
+        <div class="sidebar-box-dashboard favorites-box" *ngIf="favoriteCards.length > 0">
+          <h3 class="box-title-dashboard">Pokémon Destacados</h3>
+          <p class="box-subtitle-dashboard">Las cartas más raras e imponentes de tu colección.</p>
+          
+          <div class="favorite-cards-mini-grid">
+            <div class="fav-mini-card" *ngFor="let card of favoriteCards" [ngClass]="'rare-border-' + card.rareza.toLowerCase()">
+              <div class="fav-thumb">
+                <img [src]="card.imagen" [alt]="card.nombre">
+              </div>
+              <div class="fav-info">
+                <span class="fav-name">{{ card.nombre }}</span>
+                <span class="fav-rare text-gold">{{ card.rareza }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </section>
+
+    <!-- Catálogo de Colección de Cartas -->
+    <section class="catalog-section">
+      <div class="catalog-header-row">
+        <h2 class="section-title">Colección de Cartas Pokémon</h2>
+        
+        <!-- Contenedor de Búsqueda y Chips de Filtros -->
+        <div class="filters-container">
+          <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Buscar Pokémon..." 
+              [(ngModel)]="searchTerm" 
+              (input)="applyFilters()"
+              class="search-input"
+            >
+          </div>
+          
+          <div class="type-filters">
+            <button 
+              class="filter-chip chip-electric" 
+              [class.active]="selectedType === 'Eléctrico'" 
+              (click)="selectTypeFilter('Eléctrico')"
+            >Eléctrico</button>
+            <button 
+              class="filter-chip chip-fire" 
+              [class.active]="selectedType === 'Fuego'" 
+              (click)="selectTypeFilter('Fuego')"
+            >Fuego</button>
+            <button 
+              class="filter-chip chip-water" 
+              [class.active]="selectedType === 'Agua'" 
+              (click)="selectedType === 'Agua' ? selectTypeFilter('') : selectTypeFilter('Agua')"
+            >Agua</button>
+            <button 
+              class="filter-chip chip-grass" 
+              [class.active]="selectedType === 'Planta'" 
+              (click)="selectTypeFilter('Planta')"
+            >Planta</button>
+            <button 
+              class="filter-chip chip-psychic" 
+              [class.active]="selectedType === 'Psíquico'" 
+              (click)="selectTypeFilter('Psíquico')"
+            >Psíquico</button>
+            <button 
+              class="filter-chip chip-normal" 
+              [class.active]="selectedType === 'Normal'" 
+              (click)="selectTypeFilter('Normal')"
+            >Normal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spinner Cargando -->
+      <div class="loading-box" *ngIf="loadingCards">
+        <span class="spinner-large"></span>
+        <p>Invocando cartas desde el servidor...</p>
+      </div>
+
+      <!-- Estado Vacío -->
+      <div class="empty-box" *ngIf="!loadingCards && filteredCards.length === 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <p class="empty-title">No se encontraron cartas</p>
+        <p class="empty-desc">Prueba a cambiar tu criterio de búsqueda o filtros.</p>
+      </div>
+
+      <!-- Colección Grid -->
+      <div class="cards-grid" *ngIf="!loadingCards && filteredCards.length > 0">
+        <app-pokemon-card 
+          *ngFor="let card of filteredCards" 
+          [card]="card"
+          class="grid-card-item"
+        ></app-pokemon-card>
+      </div>
+    </section>
+
+  </div>
+</div>

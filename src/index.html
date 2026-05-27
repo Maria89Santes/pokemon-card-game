@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Pokémon Card Game Academia</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b0d19">
+  
+  <!-- SEO & PWA iOS Optimizations -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PokeCardGame">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <meta name="description" content="Colecciona cartas tácticas de Pokémon, construye tus mejores mazos y desafía a oponentes inteligentes en una arena inmersiva y reactiva de alto rendimiento.">
+</head>
+<body>
+  <app-root></app-root>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('[Service Worker] Registro exitoso:', reg.scope))
+          .catch(err => console.error('[Service Worker] Falló el registro:', err));
+      });
+    }
+  </script>
+</body>
+</html>

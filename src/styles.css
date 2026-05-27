@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Colores principales */
+  --bg-deep: #0b0d19;
+  --bg-card: rgba(20, 23, 43, 0.75);
+  --bg-card-hover: rgba(28, 32, 62, 0.85);
+  --border-color: rgba(50, 56, 97, 0.4);
+  --border-glow: rgba(0, 229, 255, 0.2);
+  
+  --text-primary: #f1f3f9;
+  --text-secondary: #909bb6;
+  --text-muted: #5e6b8c;
+  
+  --accent-cyan: #00e5ff;
+  --accent-yellow: #ffd600;
+  --accent-red: #ff1744;
+  --accent-green: #00e676;
+  
+  /* Colores de tipos de Pokémon con sus respectivos resplandores */
+  --type-electric: #ffd600;
+  --type-fire: #ff3d00;
+  --type-water: #00b0ff;
+  --type-grass: #00e676;
+  --type-psychic: #d500f9;
+  --type-normal: #a8a77a;
+  
+  /* Fuentes */
+  --font-main: 'Outfit', sans-serif;
+  
+  /* Efectos visuales de vidrio y sombras */
+  --glass-blur: blur(16px);
+  --shadow-glow: 0 0 25px rgba(0, 229, 255, 0.15);
+  --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  /* Transiciones */
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body.light-theme {
+  --bg-deep: #f4f6fa;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-hover: rgba(240, 244, 250, 0.95);
+  --border-color: rgba(144, 155, 182, 0.3);
+  --border-glow: rgba(0, 145, 234, 0.2);
+  
+  --text-primary: #101224;
+  --text-secondary: #5e6b8c;
+  --text-muted: #909bb6;
+  
+  --accent-cyan: #0091ea;
+  
+  --shadow-glow: 0 0 20px rgba(0, 145, 234, 0.08);
+  --shadow-card: 0 8px 32px 0 rgba(144, 155, 182, 0.15);
+  
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(0, 145, 234, 0.03) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(213, 0, 249, 0.03) 0%, transparent 45%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(213, 0, 249, 0.04) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Scrollbar personalizado y futurista */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

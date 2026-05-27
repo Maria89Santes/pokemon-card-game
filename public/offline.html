@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Conexión Perdida | Pokémon Card Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0b0d19;
+      --accent-cyan: #00e5ff;
+      --accent-red: #ff1744;
+      --text-primary: #f1f3f9;
+      --text-secondary: #909bb6;
+      --border-color: rgba(50, 56, 97, 0.4);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.04) 0%, transparent 45%),
+        radial-gradient(circle at 90% 80%, rgba(213, 0, 249, 0.04) 0%, transparent 45%);
+    }
+    
+    .offline-card {
+      background: rgba(20, 23, 43, 0.75);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 40px 30px;
+      max-width: 420px;
+      width: calc(100% - 32px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 25px rgba(0, 229, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      animation: cardEnter 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+    }
+    
+    .icon-wrapper {
+      margin-bottom: 25px;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .offline-icon {
+      font-size: 72px;
+      animation: bounce 2s ease-in-out infinite;
+      display: inline-block;
+    }
+    
+    .signal-beam {
+      position: absolute;
+      top: -10px;
+      left: calc(50% - 15px);
+      width: 30px;
+      height: 30px;
+      border: 4px solid var(--accent-red);
+      border-radius: 50%;
+      opacity: 0;
+      animation: expandBeam 2s ease-out infinite;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+    
+    p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    
+    .btn-retry {
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, #00b0ff 100%);
+      border: none;
+      color: #06070d;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-retry:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5);
+    }
+    
+    .btn-retry:active {
+      transform: translateY(0);
+    }
+    
+    @keyframes cardEnter {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    
+    @keyframes expandBeam {
+      0% { transform: scale(0.2); opacity: 0.8; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-card">
+    <div class="icon-wrapper">
+      <div class="offline-icon">🔌</div>
+      <div class="signal-beam"></div>
+    </div>
+    
+    <h1>CONEXIÓN INTERRUMPIDA</h1>
+    <p>
+      ¡Atención, Entrenador! Has perdido la comunicación con los servidores de la Arena. Comprueba tu conexión a Internet para reanudar el combate táctico.
+    </p>
+    
+    <button class="btn-retry" onclick="window.location.reload()">
+      Reconectar Arena
+    </button>
+  </div>
+</body>
+</html>

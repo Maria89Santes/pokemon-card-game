@@ -1,0 +1,55 @@
+<app-navbar></app-navbar>
+
+<div class="help-page">
+
+  <!-- Hero -->
+  <div class="help-hero">
+    <div class="hero-glow"></div>
+    <div class="hero-pokeball">⊙</div>
+    <h1 class="help-title">Ayuda <span>&amp;</span> Reglas del Juego</h1>
+    <p class="help-subtitle">Todo lo que necesitas saber para convertirte en un Maestro Pokémon TCG</p>
+  </div>
+
+  <!-- Quick Nav Pills -->
+  <div class="quick-nav">
+    <a *ngFor="let s of sections" (click)="toggle(s)" class="quick-pill">
+      {{ s.icon }} {{ s.title.split(' ').slice(0,2).join(' ') }}
+    </a>
+  </div>
+
+  <!-- Accordion Sections -->
+  <div class="accordion-wrap">
+    <div class="accordion-item" *ngFor="let s of sections; let i = index" [class.open]="s.open"
+         [style.animation-delay]="(i * 0.06) + 's'">
+      
+      <button class="accordion-header" (click)="toggle(s)">
+        <div class="acc-left">
+          <span class="acc-icon">{{ s.icon }}</span>
+          <span class="acc-title">{{ s.title }}</span>
+        </div>
+        <span class="acc-arrow" [class.rotated]="s.open">▾</span>
+      </button>
+
+      <div class="accordion-body" *ngIf="s.open">
+        <div class="acc-content" [innerHTML]="s.content"></div>
+
+        <!-- Extra Table / List -->
+        <div class="extra-grid" *ngIf="s.extra && s.extra.length > 0">
+          <div class="extra-item" *ngFor="let e of s.extra" [class]="'extra-item ' + (e.class || '')">
+            <span class="extra-label">{{ e.label }}</span>
+            <span class="extra-value">{{ e.value }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer CTA -->
+  <div class="help-footer-cta">
+    <p>¿Listo para la batalla? 💪</p>
+    <a routerLink="/decks" class="btn-help-cta">⚔️ Ir a Mis Mazos</a>
+    <a routerLink="/lobby" class="btn-help-cta btn-pvp">🌐 Lobby PvP</a>
+  </div>
+
+</div>

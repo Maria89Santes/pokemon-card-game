@@ -1,0 +1,173 @@
+<!-- Main Router Outlet -->
+<main [class.blur-content]="showSplash || showSettings">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Floating Settings Trigger (Solo cuando está autenticado y no hay splash) -->
+@if (!showSplash && supabaseService.currentUserSignal()) {
+  <button 
+    class="settings-floating-trigger" 
+    (click)="toggleSettings()" 
+    (mouseenter)="playHover()"
+    title="Ajustes de Juego"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+  </button>
+}
+
+<!-- Cinematic Startup Splash Screen -->
+@if (showSplash) {
+  <div class="splash-overlay">
+    <div class="splash-container">
+      <div class="splash-logo-wrapper">
+        <div class="pokeball-spinner">
+          <div class="pokeball-top"></div>
+          <div class="pokeball-center-line"></div>
+          <div class="pokeball-button"></div>
+          <div class="pokeball-bottom"></div>
+        </div>
+        <div class="logo-text-glow">POKÉMON CARD GAME</div>
+        <div class="logo-subtext">ACADEMIA TÁCTICA</div>
+      </div>
+      
+      <div class="splash-loader-bar">
+        <div class="splash-loader-fill"></div>
+      </div>
+      
+      <p class="splash-status">{{ splashMessage }}</p>
+    </div>
+  </div>
+}
+
+<!-- Interactive Settings Modal (Glassmorphism) -->
+@if (showSettings) {
+  <div class="modal-overlay" (click)="closeSettings()">
+    <div class="settings-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Ajustes del Sistema ⚙️</h2>
+        <button class="close-btn" (click)="closeSettings()" (mouseenter)="playHover()">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Control de Sonido -->
+        <div class="setting-group">
+          <h3>Música & SFX 🎵</h3>
+          
+          <div class="setting-row">
+            <label for="mute-checkbox">Silenciar todo</label>
+            <label class="switch-container" for="mute-checkbox">
+              <input 
+                type="checkbox" 
+                id="mute-checkbox" 
+                [checked]="audioService.muted()" 
+                (change)="audioService.toggleMute()" 
+                (mouseenter)="playHover()"
+              />
+              <span class="custom-switch"></span>
+            </label>
+          </div>
+          
+          <div class="setting-row">
+            <label for="volume-slider">Volumen General ({{ (audioService.volume() * 100).toFixed(0) }}%)</label>
+            <input 
+              type="range" 
+              id="volume-slider" 
+              min="0" 
+              max="1" 
+              step="0.05" 
+              [value]="audioService.volume()" 
+              (input)="audioService.setVolume($any($event.target).value)" 
+              (mouseenter)="playHover()"
+              class="custom-slider"
+            />
+          </div>
+        </div>
+
+        <!-- Control de Pantalla -->
+        <div class="setting-group">
+          <h3>Visualización 🖥️</h3>
+          <div class="setting-row">
+            <label>Pantalla Completa</label>
+            <button 
+              class="btn-action" 
+              (click)="toggleFullscreen()" 
+              (mouseenter)="playHover()"
+            >
+              {{ isFullscreen ? 'Salir de Pantalla Completa ↙️' : 'Pantalla Completa ↗️' }}
+            </button>
+          </div>
+          
+          <div class="setting-row">
+            <label>Tema Visual</label>
+            <button 
+              class="btn-action" 
+              (click)="toggleTheme()" 
+              (mouseenter)="playHover()"
+            >
+              {{ isLightTheme ? 'Modo Oscuro 🌙' : 'Modo Claro ☀️' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Diagnóstico / Info -->
+        <div class="setting-group info-group">
+          <h3>Información del Jugador</h3>
+          <div class="info-row">
+            <span>Usuario:</span>
+            <strong>{{ userSignalVal }}</strong>
+          </div>
+          <div class="info-row">
+            <span>Perfil:</span>
+            <strong>{{ profileSignalVal }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="closeSettings()" (mouseenter)="playHover()">Confirmar Ajustes</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Global Toast Notification System -->
+<div class="toast-container">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast-card" [class]="toast.type" (mouseenter)="playHover()">
+      <div class="toast-indicator"></div>
+      <div class="toast-content">
+        <span class="toast-icon">
+          @if (toast.type === 'success') { ✔️ }
+          @else if (toast.type === 'error') { ❌ }
+          @else if (toast.type === 'warning') { ⚠️ }
+          @else { ℹ️ }
+        </span>
+        <p class="toast-message">{{ toast.message }}</p>
+      </div>
+      <button class="toast-close" (click)="toastService.remove(toast.id); playClick()">×</button>
+    </div>
+  }
+</div>
+
+<!-- Barra de Diagnóstico de Autenticación (Remodelada para portafolio premium, plegable) -->
+<div class="debug-panel">
+  <details>
+    <summary (mouseenter)="playHover()" (click)="playClick()">
+      <span>⚔️ DEBUGGER DE CONEXIÓN SUPABASE</span>
+      <span class="status-indicator" [class.connected]="initSignalVal"></span>
+    </summary>
+    <div class="debug-details">
+      <p><span>Sesión:</span> <strong>{{ userSignalVal }}</strong></p>
+      <p><span>Perfil:</span> <strong>{{ profileSignalVal }}</strong></p>
+      <p><span>Inicializado:</span> <strong>{{ initSignalVal }}</strong></p>
+      <div class="debug-actions">
+        <button (click)="forceLogout()" (mouseenter)="playHover()">
+          FORZAR LOGOUT (RESET CACHE)
+        </button>
+      </div>
+    </div>
+  </details>
+</div>

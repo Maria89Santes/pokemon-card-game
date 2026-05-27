@@ -1,0 +1,206 @@
+<app-navbar></app-navbar>
+
+<div class="lobby-page">
+  <!-- Partículas Animadas de Fondo -->
+  <div class="lobby-bg-particles">
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+    <div class="particle p3"></div>
+    <div class="particle p4"></div>
+    <div class="particle p5"></div>
+  </div>
+
+  <div class="lobby-container">
+
+    <!-- CABECERA PRINCIPAL -->
+    <header class="lobby-header">
+      <div class="header-badge">MULTIJUGADOR ONLINE</div>
+      <h1>Lobby del Coliseo Pokémon 🌐</h1>
+      <p class="header-desc">Desafía a otros entrenadores en tiempo real. Las salas se actualizan <strong>en vivo</strong> via Supabase Realtime.</p>
+      <div class="online-indicator" *ngIf="!loading">
+        <span class="pulse-dot"></span>
+        <span>{{ availableMatches.length }} sala{{ availableMatches.length !== 1 ? 's' : '' }} activa{{ availableMatches.length !== 1 ? 's' : '' }} ahora</span>
+      </div>
+    </header>
+
+    <!-- CÓMO FUNCIONA (mini guía visual) -->
+    <div class="how-it-works">
+      <div class="how-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Elige tu mazo</strong>
+          <span>Selecciona el mazo con el que combatirás</span>
+        </div>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Crea o únete</strong>
+          <span>Crea una sala o únete a un retador activo</span>
+        </div>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>¡A batallar!</strong>
+          <span>La arena se abre automáticamente</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lobby-workspace">
+      <!-- COLUMNA IZQUIERDA: Selección de Mazo -->
+      <aside class="lobby-sidebar">
+        <div class="lobby-box">
+          <h2 class="box-title">1. Elige tu Mazo Activo</h2>
+          <p class="box-desc">Debes elegir un mazo que contenga cartas para poder ingresar a la arena de combate.</p>
+
+          <div class="decks-list-scroll">
+            @if (decks.length === 0) {
+              <div class="empty-decks-box">
+                <p>No tienes ningún mazo creado.</p>
+                <button routerLink="/decks" (mouseenter)="playHover()" class="btn-create-deck-redirect">Ir a Mis Mazos</button>
+              </div>
+            } @else {
+              @for (deck of decks; track deck.id) {
+                <div 
+                  class="deck-select-card" 
+                  [class.selected]="selectedDeckId === deck.id"
+                  [class.empty-deck]="(deck.total_cartas || 0) === 0"
+                  (click)="selectedDeckId = deck.id; audioService.playClick()"
+                  (mouseenter)="playHover()"
+                >
+                  <div class="deck-indicator-glow"></div>
+                  <div class="deck-info">
+                    <span class="deck-name">{{ deck.nombre }}</span>
+                    <span class="deck-count">{{ deck.total_cartas || 0 }} cartas</span>
+                  </div>
+                  @if ((deck.total_cartas || 0) === 0) {
+                    <span class="empty-badge">Vacío</span>
+                  } @else {
+                    <span class="ready-badge">Listo ✓</span>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Mini reglas PvP -->
+        <div class="pvp-rules-mini">
+          <h3>⚡ Reglas PvP</h3>
+          <ul>
+            <li>Turnos alternados en tiempo real</li>
+            <li>Banca de 3 Pokémon disponible</li>
+            <li>Habilidades y estados alterados activos</li>
+            <li>El ganador recibe el doble de XP</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- COLUMNA DERECHA: Listado de Salas / Estado de Espera -->
+      <main class="lobby-main-content">
+        @if (waitingMatchId) {
+          <!-- PANTALLA DE ESPERA (CREADOR) -->
+          <div class="lobby-box waiting-box">
+            <div class="radar-container">
+              <div class="radar-circle rc1"></div>
+              <div class="radar-circle rc2"></div>
+              <div class="radar-circle rc3"></div>
+              <div class="radar-scanner"></div>
+              <div class="radar-center">⚔️</div>
+            </div>
+
+            <h2 class="waiting-title text-gold">SINTONIZANDO SEÑAL DE BATALLA</h2>
+            <p class="waiting-subtitle">Sala de combate establecida con ID: <strong class="text-cyan">{{ waitingMatchId.substring(0, 8).toUpperCase() }}</strong></p>
+            <p class="waiting-desc">Esperando a que otro Entrenador Pokémon acepte tu desafío en la red...</p>
+            <p class="realtime-note">🔴 Escuchando en tiempo real via Supabase Realtime...</p>
+
+            <button class="btn-cancel-waiting" (click)="handleCancelWaiting()" (mouseenter)="playHover()">
+              Cancelar Desafío ❌
+            </button>
+          </div>
+        } @else {
+          <!-- LISTADO DE SALAS DISPONIBLES (GUEST) -->
+          <div class="lobby-box">
+            <div class="box-header-row">
+              <div>
+                <h2 class="box-title">2. Salas de Duelo Disponibles</h2>
+                <p class="realtime-label">🟢 Actualización en tiempo real activa</p>
+              </div>
+              <button 
+                class="btn-create-lobby" 
+                (click)="handleCreateRoom()" 
+                [disabled]="loading || !selectedDeckId"
+                (mouseenter)="playHover()"
+              >
+                ⚔️ Crear Sala PvP
+              </button>
+            </div>
+
+            <div class="matches-list-container">
+              @if (loading) {
+                <div class="lobby-loading">
+                  <span class="spinner"></span>
+                  <p>Actualizando canal de comunicaciones...</p>
+                </div>
+              } @else if (availableMatches.length === 0) {
+                <div class="empty-matches-box">
+                  <div class="empty-icon">🌐</div>
+                  <h3>No hay retadores esperando</h3>
+                  <p>No se encontraron salas activas en este momento. ¡Sé el primero en crear una y espera a tu rival!</p>
+                  <button class="btn-primary" (click)="handleCreateRoom()" [disabled]="!selectedDeckId">
+                    ⚔️ Establecer mi Desafío PvP
+                  </button>
+                </div>
+              } @else {
+                <div class="matches-grid">
+                  @for (match of availableMatches; track match.id) {
+                    <div class="match-room-card" (mouseenter)="playHover()">
+                      <div class="room-glowing-glow"></div>
+                      
+                      <!-- Live indicator -->
+                      <div class="room-live-bar">
+                        <span class="live-dot"></span>
+                        <span class="live-text">SALA ACTIVA</span>
+                        <span class="wait-time">{{ formatWait(match.waitSeconds) }}</span>
+                      </div>
+
+                      <div class="room-details">
+                        <div class="room-host">
+                          <div class="host-avatar-img">
+                            <img [src]="'https://api.dicebear.com/7.x/bottts/svg?seed=' + (match.jugador1?.username || 'trainer')" 
+                                 [alt]="match.jugador1?.username || 'Entrenador'"
+                                 class="host-avatar-img-el">
+                          </div>
+                          <div class="host-info">
+                            <span class="host-name">{{ match.jugador1?.username || 'Entrenador' }}</span>
+                            <span class="host-record text-gold">{{ match.jugador1?.victorias || 0 }} Victorias</span>
+                          </div>
+                        </div>
+                        <div class="room-meta">
+                          <span class="meta-item mode-badge">🎮 Casual PvP</span>
+                          <span class="meta-item room-id-badge">{{ match.id.substring(0, 6).toUpperCase() }}</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        class="btn-join-match" 
+                        (click)="handleJoinMatch(match)" 
+                        [disabled]="!selectedDeckId || loading"
+                      >
+                        ⚔️ Desafiar
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </main>
+    </div>
+  </div>
+</div>

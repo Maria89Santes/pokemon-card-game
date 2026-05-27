@@ -1,0 +1,1921 @@
+.battle-page {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  padding: 40px 24px;
+  position: relative;
+  overflow: hidden;
+  /* Fondo estilo estadio iluminado de noche con luces de neón gigantes */
+  background: radial-gradient(circle at 50% 15%, rgba(0, 229, 255, 0.18), transparent 55%),
+              radial-gradient(circle at 50% 85%, rgba(213, 0, 249, 0.15), transparent 60%),
+              radial-gradient(circle at 10% 50%, rgba(0, 230, 118, 0.08), transparent 40%),
+              radial-gradient(circle at 90% 50%, rgba(255, 61, 0, 0.08), transparent 40%),
+              linear-gradient(180deg, #070914 0%, #11152a 50%, #080a14 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Rejilla de Duelo Holográfica 3D / Perspective Grid en la arena */
+.battle-page::before {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: -20%;
+  right: -20%;
+  bottom: 0;
+  background-image: 
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 229, 255, 0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-position: center top;
+  transform: perspective(350px) rotateX(55deg);
+  transform-origin: center top;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+  /* Máscara de desvanecimiento hacia el horizonte */
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 1) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 1) 100%);
+}
+
+/* Efecto de Estadio: El Círculo de PokeBall Central de Duelo en perspectiva 3D */
+.battle-page::after {
+  content: '';
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%) perspective(350px) rotateX(55deg);
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, 0.08);
+  background: 
+    /* Mitad Superior Roja de PokeBall con Neon Glow */
+    linear-gradient(to bottom, rgba(255, 23, 68, 0.16) 49%, transparent 49%),
+    /* Mitad Inferior Blanca de PokeBall con Neon Glow */
+    linear-gradient(to top, rgba(255, 255, 255, 0.08) 49%, transparent 49%),
+    /* Anillo negro central */
+    radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.45) 21%, rgba(0, 0, 0, 0.45) 26%, transparent 27%);
+  box-shadow: 0 0 35px rgba(0, 229, 255, 0.2),
+              inset 0 0 25px rgba(0, 229, 255, 0.1);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.9;
+  animation: pulseStadiumGlow 4s infinite alternate ease-in-out;
+}
+
+@keyframes pulseStadiumGlow {
+  0% { transform: translate(-50%, -50%) perspective(350px) rotateX(55deg) scale(0.95); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) perspective(350px) rotateX(55deg) scale(1.05); opacity: 1; }
+}
+
+.battle-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Partículas de Fondo en Movimiento */
+.battle-bg-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(0, 229, 255, 0.12);
+  border-radius: 50%;
+  animation: floatParticles 18s infinite linear;
+}
+
+.particle.p1 { width: 6px; height: 6px; left: 10%; top: 80%; animation-delay: 0s; }
+.particle.p2 { width: 8px; height: 8px; left: 30%; top: 20%; animation-delay: 2s; background: rgba(255, 214, 0, 0.1); }
+.particle.p3 { width: 4px; height: 4px; left: 55%; top: 90%; animation-delay: 4s; }
+.particle.p4 { width: 10px; height: 10px; left: 80%; top: 40%; animation-delay: 6s; background: rgba(255, 23, 68, 0.08); }
+.particle.p5 { width: 5px; height: 5px; left: 25%; top: 60%; animation-delay: 8s; }
+.particle.p6 { width: 7px; height: 7px; left: 70%; top: 15%; animation-delay: 1s; }
+.particle.p7 { width: 9px; height: 9px; left: 88%; top: 85%; animation-delay: 3s; background: rgba(213, 0, 249, 0.1); }
+.particle.p8 { width: 4px; height: 4px; left: 45%; top: 35%; animation-delay: 5s; }
+
+@keyframes floatParticles {
+  0% { transform: translateY(100vh) scale(0.6) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) scale(1.3) rotate(360deg); opacity: 0; }
+}
+
+/* Grilla del Tablero de Juego */
+.battle-workspace {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ==================== COLUMNA IZQUIERDA: SIDEBAR ==================== */
+.battle-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-box {
+  background: rgba(20, 23, 43, 0.65);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.3s ease;
+}
+
+.sidebar-box:hover {
+  border-color: rgba(0, 229, 255, 0.2);
+}
+
+.box-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+.match-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.85rem;
+}
+
+.match-info-row .lbl {
+  color: var(--text-secondary);
+}
+
+.match-info-row .val {
+  font-weight: 700;
+}
+
+/* Historial / Logs Scroll */
+.battle-logs-scroll {
+  height: 340px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.log-message {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  padding-bottom: 6px;
+  font-family: monospace;
+}
+
+.log-message:last-child {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.battle-logs-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.battle-logs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.battle-logs-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+/* ==================== COLUMNA CENTRAL: BATTLEFIELD ==================== */
+.battlefield {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: radial-gradient(circle at top, rgba(20, 23, 44, 0.85), rgba(12, 14, 28, 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(0, 229, 255, 0.2);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8),
+              0 0 30px rgba(0, 229, 255, 0.06),
+              inset 0 0 45px rgba(0, 0, 0, 0.6);
+  position: relative;
+  z-index: 5;
+}
+
+/* Zonas de Jugadores */
+.player-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.zone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding-bottom: 10px;
+}
+
+.player-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cpu-deck-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Mano oculta de CPU (PokeBall reverso estilo) */
+.cpu-hand-hidden {
+  display: flex;
+  padding-left: 8px;
+}
+
+.cpu-card-back {
+  width: 24px;
+  height: 34px;
+  background: linear-gradient(180deg, var(--accent-red) 50%, var(--text-primary) 50%);
+  border: 1.5px solid #000;
+  border-radius: 4px;
+  box-shadow: -3px 0 6px rgba(0, 0, 0, 0.4);
+  margin-left: -10px;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.cpu-card-back::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 1.5px solid #000;
+  border-radius: 50%;
+}
+
+/* Espacio Activo Arena Slots */
+.active-arena-slot {
+  width: 100%;
+  height: 220px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.cpu-slot {
+  background: radial-gradient(circle, rgba(255, 23, 68, 0.05) 0%, transparent 80%);
+}
+
+.player-slot {
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.05) 0%, transparent 80%);
+}
+
+.empty-active-msg {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.cursor-pulse {
+  animation: pulseGrad 2s infinite ease-in-out;
+  cursor: pointer;
+}
+
+@keyframes pulseGrad {
+  0%, 100% { opacity: 0.5; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.bounce {
+  animation: bounceMini 1.5s infinite;
+}
+
+@keyframes bounceMini {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Pokémon Activo Carta Física */
+.active-combat-card-box {
+  width: 100%;
+  max-width: 250px;
+  background: rgba(24, 27, 49, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: transform 0.4s ease, filter 0.8s ease, opacity 0.8s ease;
+}
+
+.cpu-slot .active-combat-card-box { 
+  border-top: 3px solid var(--accent-red); 
+  box-shadow: 0 0 15px rgba(255, 23, 68, 0.15);
+}
+.player-slot .active-combat-card-box { 
+  border-top: 3px solid var(--accent-cyan); 
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+
+.combat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cc-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
+}
+
+.cc-hp {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.cc-hp-lbl {
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.cc-hp-val {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* HP Barra de Salud Suave */
+.hp-bar-outer {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.hp-bar-inner {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.bar-green { background: #00e676; box-shadow: 0 0 8px rgba(0, 230, 118, 0.4); }
+.bar-yellow { background: #ffd600; box-shadow: 0 0 8px rgba(255, 214, 0, 0.4); }
+.bar-red { background: #ff1744; box-shadow: 0 0 8px rgba(255, 23, 68, 0.4); }
+
+/* Mini Visual */
+.combat-card-image {
+  width: 100%;
+  height: 70px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.combat-card-image img {
+  height: 90%;
+  object-fit: contain;
+}
+
+.cc-type-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.combat-card-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.combat-card-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* Debilitado (Fainted Card) */
+.fainted-card {
+  filter: grayscale(1) contrast(0.7);
+  opacity: 0.35;
+  transform: scale(0.9) rotate(-3deg);
+  pointer-events: none;
+}
+
+/* Controles de Ataque del Pokémon Activo */
+.active-combat-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 8px;
+}
+
+.energy-bubble-count, .cpu-energy-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.2s ease;
+}
+
+.energy-number, .cpu-energy-counter .n-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent-yellow);
+}
+
+.energy-lbl, .cpu-energy-counter .lbl-val {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.energy-pulse {
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(255, 214, 0, 0.45);
+  border-color: rgba(255, 214, 0, 0.3);
+}
+
+.btn-attack-action {
+  background: linear-gradient(135deg, var(--accent-red), #d50000);
+  border: none;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition-smooth);
+}
+
+.btn-attack-action:hover:not(:disabled) {
+  box-shadow: 0 0 15px rgba(255, 23, 68, 0.55);
+  transform: translateY(-1px);
+}
+
+.btn-attack-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==================== ANIMACIONES FÍSICAS DE COMBATE ==================== */
+
+/* Popup de Daño Flotante */
+.damage-popup-txt {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--accent-red);
+  text-shadow: 0 0 15px rgba(255, 23, 68, 0.8), 0 0 5px rgba(0,0,0,0.8);
+  animation: popupFloat 1s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.player-pop {
+  color: #ff5252;
+}
+
+@keyframes popupFloat {
+  0% { transform: translate(-50%, 20px) scale(0.6); opacity: 0; }
+  15% { transform: translate(-50%, 0) scale(1.3); opacity: 1; }
+  100% { transform: translate(-50%, -60px) scale(1); opacity: 0; }
+}
+
+/* Envestida Ataque Físico */
+.attack-dash {
+  z-index: 50;
+}
+
+.cpu-slot .attack-dash {
+  animation: dashDown 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.player-slot .attack-dash {
+  animation: dashUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes dashUp {
+  0% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(-80px) scale(1.06) rotate(-2deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
+@keyframes dashDown {
+  0% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(80px) scale(1.06) rotate(2deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
+/* Sacudida por Daño */
+.shake-damage {
+  animation: shakeDam 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shakeDam {
+  10%, 90% { transform: translate3d(-5px, -1px, 0); }
+  20%, 80% { transform: translate3d(7px, 2px, 0); }
+  30%, 50%, 70% { transform: translate3d(-9px, -2px, 0); }
+  40%, 60% { transform: translate3d(9px, 1px, 0); }
+}
+
+/* ==================== DIVISOR CENTRAL VS ==================== */
+.vs-divider-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.vs-line {
+  flex-grow: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.vs-control-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+}
+
+.turn-indicator {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 6px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 8, 16, 0.85);
+  transition: all 0.4s ease;
+}
+
+.player-turn {
+  color: var(--accent-cyan);
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+}
+
+.cpu-turn {
+  color: var(--accent-yellow);
+  border-color: rgba(255, 214, 0, 0.35);
+  box-shadow: 0 0 15px rgba(255, 214, 0, 0.25);
+}
+
+.btn-end-turn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-end-turn:hover:not(:disabled) {
+  background: var(--text-primary);
+  color: #0b0d19;
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+.btn-end-turn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ==================== MANO DEL JUGADOR ==================== */
+.player-hand-row {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  overflow-x: auto;
+  min-height: 120px;
+}
+
+.empty-hand-alert {
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 20px 0;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+}
+
+.hand-card-container {
+  width: 130px;
+  height: 170px;
+  background: rgba(24, 27, 49, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-smooth);
+}
+
+.hand-card-container.clickable:hover {
+  transform: translateY(-16px) scale(1.05);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 229, 255, 0.25);
+}
+
+.hand-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+}
+
+.hc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hc-name {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 65px;
+}
+
+.hc-hp {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.hc-img {
+  width: 100%;
+  height: 70px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hc-img img {
+  height: 90%;
+  object-fit: contain;
+}
+
+.hc-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-top: auto;
+}
+
+/* Invocación Overlay en Carta de Mano */
+.hand-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(7, 8, 16, 0.75);
+  backdrop-filter: blur(2px);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: var(--transition-smooth);
+}
+
+.hand-card-container.clickable:hover .hand-card-overlay {
+  opacity: 1;
+}
+
+.btn-invoke-hand {
+  background: var(--accent-cyan);
+  border: none;
+  color: #0b0d19;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: var(--font-main);
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+/* ==================== OVERLAYS GENERALES BATTLE (Fase 4 Premium) ==================== */
+
+/* Carga inicial */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-deep);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+
+/* Banner de Turnos Cinemático */
+.turn-banner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background: rgba(5, 6, 12, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.turn-banner-content {
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(7, 8, 16, 0.95) 25%, rgba(7, 8, 16, 0.95) 75%, transparent);
+  border-top: 2px solid rgba(255,255,255,0.08);
+  border-bottom: 2px solid rgba(255,255,255,0.08);
+  padding: 24px 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  animation: bannerSlide 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.player-banner .turn-banner-content {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 50px rgba(0, 229, 255, 0.15);
+}
+
+.cpu-banner .turn-banner-content {
+  border-color: rgba(255, 23, 68, 0.4);
+  box-shadow: 0 0 50px rgba(255, 23, 68, 0.15);
+}
+
+.banner-glow {
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 80%);
+  animation: glowSweep 1.5s infinite linear;
+}
+
+.banner-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.35);
+}
+
+.player-banner .banner-title {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+}
+
+.cpu-banner .banner-title {
+  color: var(--accent-red);
+  text-shadow: 0 0 25px rgba(255, 23, 68, 0.6);
+}
+
+@keyframes bannerSlide {
+  0% { transform: scaleX(0); opacity: 0; }
+  15% { transform: scaleX(1); opacity: 1; }
+  85% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+
+@keyframes glowSweep {
+  0% { left: -100px; }
+  100% { left: 100%; }
+}
+
+/* Splash Cinemático de LEVEL UP */
+.level-up-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 300;
+  background: rgba(5, 6, 12, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.level-up-card {
+  background: rgba(18, 20, 38, 0.95);
+  border: 2px solid var(--accent-yellow);
+  box-shadow: 0 0 45px rgba(255, 214, 0, 0.55), inset 0 0 25px rgba(255, 214, 0, 0.15);
+  border-radius: 24px;
+  padding: 40px;
+  width: 90%;
+  max-width: 440px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: levelUpReveal 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes levelUpReveal {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.level-up-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: spinStar 2s infinite linear;
+}
+
+@keyframes spinStar {
+  0% { transform: rotate(0); filter: drop-shadow(0 0 5px rgba(255,214,0,0.5)); }
+  50% { filter: drop-shadow(0 0 20px rgba(255,214,0,0.8)); }
+  100% { transform: rotate(360deg); filter: drop-shadow(0 0 5px rgba(255,214,0,0.5)); }
+}
+
+.level-up-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--accent-yellow);
+  text-shadow: 0 0 20px rgba(255, 214, 0, 0.45);
+  margin-bottom: 8px;
+}
+
+.level-up-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 24px;
+}
+
+.new-level-badge {
+  font-size: 2rem;
+  font-weight: 900;
+  background: var(--bg-deep);
+  border: 1px solid var(--accent-yellow);
+  padding: 8px 32px;
+  border-radius: 40px;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 214, 0, 0.3);
+  margin-bottom: 8px;
+}
+
+.new-level-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.btn-level-up-confirm {
+  background: linear-gradient(135deg, var(--accent-yellow), #ffa000);
+  border: none;
+  color: #0b0d19;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 214, 0, 0.3);
+  transition: var(--transition-smooth);
+}
+
+.btn-level-up-confirm:hover {
+  box-shadow: 0 6px 20px rgba(255, 214, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Sparkles del Level Up */
+.sparkle {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: shineSparkle 1.5s infinite ease-in-out;
+}
+.sparkle.sp1 { width: 6px; height: 6px; top: 15%; left: 20%; animation-delay: 0.2s; background: var(--accent-yellow); }
+.sparkle.sp2 { width: 8px; height: 8px; top: 40%; right: 15%; animation-delay: 0.5s; }
+.sparkle.sp3 { width: 5px; height: 5px; bottom: 30%; left: 15%; animation-delay: 0.8s; background: var(--accent-yellow); }
+
+@keyframes shineSparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* Game Over Overlay (Loot/Rewards Premium) */
+.game-over-overlay {
+  z-index: 200;
+}
+
+.game-over-card {
+  text-align: center;
+  max-width: 460px;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.won-card {
+  border-top: 5px solid var(--accent-yellow);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 35px rgba(255, 214, 0, 0.35);
+}
+
+.lost-card {
+  border-top: 5px solid var(--accent-red);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 35px rgba(255, 23, 68, 0.35);
+}
+
+.game-over-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: zoomReveal 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes zoomReveal {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.go-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.go-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 24px;
+}
+
+/* Progreso XP Fin de Combate */
+.go-rewards-xp-box {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.xp-metrics {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.xp-metrics-lvl {
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.rewards-xp-bar-bg {
+  width: 100%;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rewards-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffc107, #ff9800);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  animation: fillXpBar 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.35);
+}
+
+.xp-float-percentage {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #0b0d19;
+}
+
+@keyframes fillXpBar {
+  from { width: 0%; }
+}
+
+.go-rewards {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.rewards-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.reward-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.reward-lbl {
+  color: var(--text-secondary);
+}
+
+.reward-val {
+  font-weight: 700;
+}
+
+.go-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.go-actions button {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-go-action {
+  background: linear-gradient(135deg, var(--accent-cyan), #00b0ff);
+  border: none;
+  color: #0b0d19;
+}
+
+.btn-go-action:hover {
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+}
+
+.btn-go-action.secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.btn-go-action.secondary:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Responsive del Workspace */
+@media (max-width: 900px) {
+  .battle-workspace {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .battle-sidebar {
+    order: 2;
+  }
+  .battle-logs-scroll {
+    height: 180px;
+  }
+  .battle-page {
+    padding: 20px 16px;
+  }
+  .battlefield {
+    padding: 16px;
+  }
+}
+
+/* ==================== ACCIONES TÁCTICAS Y ESCUDOS (IA RÚBRICA) ==================== */
+.btn-defend-action, .btn-ability-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: var(--font-main);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-transform: uppercase;
+}
+
+.btn-defend-action {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(0, 176, 255, 0.35));
+  border: 1.5px solid var(--accent-cyan);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+}
+
+.btn-defend-action:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.45), rgba(0, 176, 255, 0.55));
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-ability-action {
+  background: linear-gradient(135deg, rgba(213, 0, 249, 0.25), rgba(170, 0, 255, 0.35));
+  border: 1.5px solid var(--accent-psychic, #d500f9);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(213, 0, 249, 0.15);
+}
+
+.btn-ability-action:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(213, 0, 249, 0.45), rgba(170, 0, 255, 0.55));
+  box-shadow: 0 0 18px rgba(213, 0, 249, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-defend-action:disabled, .btn-ability-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Indicador de Escudo Activo en Carta */
+.active-shield-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 229, 255, 0.9);
+  border: 1px solid #fff;
+  color: #0b0d19;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
+  animation: pulseShield 1.5s infinite alternate;
+}
+
+.active-shield-badge.player-badge {
+  background: rgba(0, 229, 255, 0.95);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.8);
+}
+
+@keyframes pulseShield {
+  from { transform: scale(1); box-shadow: 0 0 8px rgba(0, 229, 255, 0.5); }
+  to { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 229, 255, 0.9); }
+}
+
+/* ==================== RESPLANDORES NEÓN ELEMENTALES DE CARTAS ACTIVAS ==================== */
+.active-combat-card-box[data-type="Normal"],
+.active-combat-card-box[data-type="normal"] {
+  border: 2px solid var(--type-normal) !important;
+  box-shadow: 0 0 20px rgba(168, 167, 122, 0.35), inset 0 0 12px rgba(168, 167, 122, 0.2) !important;
+}
+
+/* =========================================================================
+   FASÉ 1: ANIMACIONES ELEMENTALES DE ATAQUE (PARTÍCULAS CSS)
+   ========================================================================= */
+
+.elemental-attack-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 99;
+  overflow: hidden;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vfx-particle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 50%;
+}
+
+/* --- TIPO FUEGO 🔥 --- */
+[data-attacker-type="Fuego"] .vfx-particle,
+[data-attacker-type="fuego"] .vfx-particle {
+  background: radial-gradient(circle, #ffeb3b 0%, #ff5722 50%, #d84315 100%);
+  box-shadow: 0 0 12px #ff5722, 0 0 20px #ff3d00;
+  width: 14px;
+  height: 14px;
+}
+
+[data-attacker-type="Fuego"] .vp1 { animation: fireSpark1 0.8s ease-out forwards; }
+[data-attacker-type="Fuego"] .vp2 { animation: fireSpark2 0.8s ease-out 0.15s forwards; }
+[data-attacker-type="Fuego"] .vp3 { animation: fireSpark3 0.8s ease-out 0.05s forwards; }
+[data-attacker-type="Fuego"] .vp4 { animation: fireSpark4 0.8s ease-out 0.25s forwards; }
+[data-attacker-type="Fuego"] .vp5 { animation: fireSpark5 0.8s ease-out 0.1s forwards; }
+
+@keyframes fireSpark1 {
+  0% { transform: scale(0.2) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.4) translate(-40px, -60px); opacity: 0; filter: blur(2px); }
+}
+@keyframes fireSpark2 {
+  0% { transform: scale(0.2) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.2) translate(50px, -50px); opacity: 0; filter: blur(2px); }
+}
+@keyframes fireSpark3 {
+  0% { transform: scale(0.2) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.6) translate(-10px, -90px); opacity: 0; filter: blur(3px); }
+}
+@keyframes fireSpark4 {
+  0% { transform: scale(0.2) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1) translate(40px, 60px); opacity: 0; filter: blur(2px); }
+}
+@keyframes fireSpark5 {
+  0% { transform: scale(0.2) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.5) translate(-50px, 40px); opacity: 0; filter: blur(3px); }
+}
+
+/* --- TIPO ELÉCTRICO ⚡ --- */
+[data-attacker-type="Eléctrico"] .vfx-particle,
+[data-attacker-type="electrico"] .vfx-particle,
+[data-attacker-type="Electrico"] .vfx-particle {
+  background: #fff;
+  border: 2px solid #00e5ff;
+  box-shadow: 0 0 15px #00e5ff, 0 0 25px #ffd600;
+  width: 4px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+[data-attacker-type="Eléctrico"] .vp1 { animation: elecShock1 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+[data-attacker-type="Eléctrico"] .vp2 { animation: elecShock2 0.7s cubic-bezier(0.19, 1, 0.22, 1) 0.12s forwards; }
+[data-attacker-type="Eléctrico"] .vp3 { animation: elecShock3 0.7s cubic-bezier(0.19, 1, 0.22, 1) 0.05s forwards; }
+[data-attacker-type="Eléctrico"] .vp4 { animation: elecShock4 0.7s cubic-bezier(0.19, 1, 0.22, 1) 0.22s forwards; }
+[data-attacker-type="Eléctrico"] .vp5 { animation: elecShock5 0.7s cubic-bezier(0.19, 1, 0.22, 1) 0.08s forwards; }
+
+@keyframes elecShock1 {
+  0% { transform: scaleY(0.2) rotate(35deg) translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: scaleY(1.4) rotate(45deg) translate(-60px, -20px); opacity: 0; }
+}
+@keyframes elecShock2 {
+  0% { transform: scaleY(0.2) rotate(-25deg) translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: scaleY(1.2) rotate(-35deg) translate(50px, -40px); opacity: 0; }
+}
+@keyframes elecShock3 {
+  0% { transform: scaleY(0.2) rotate(90deg) translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: scaleY(1.5) rotate(90deg) translate(10px, 80px); opacity: 0; }
+}
+@keyframes elecShock4 {
+  0% { transform: scaleY(0.2) rotate(-75deg) translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: scaleY(1.3) rotate(-65deg) translate(-50px, 60px); opacity: 0; }
+}
+@keyframes elecShock5 {
+  0% { transform: scaleY(0.2) rotate(15deg) translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: scaleY(1.6) rotate(10deg) translate(40px, 20px); opacity: 0; }
+}
+
+/* --- TIPO AGUA 💧 --- */
+[data-attacker-type="Agua"] .vfx-particle,
+[data-attacker-type="agua"] .vfx-particle {
+  background: rgba(0, 176, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 176, 255, 0.6), inset 0 0 6px rgba(255,255,255,0.6);
+  width: 16px;
+  height: 16px;
+}
+
+[data-attacker-type="Agua"] .vp1 { animation: waterBubble1 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+[data-attacker-type="Agua"] .vp2 { animation: waterBubble2 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) 0.1s forwards; }
+[data-attacker-type="Agua"] .vp3 { animation: waterBubble3 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) 0.2s forwards; }
+[data-attacker-type="Agua"] .vp4 { animation: waterBubble4 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) 0.05s forwards; }
+[data-attacker-type="Agua"] .vp5 { animation: waterBubble5 0.9s cubic-bezier(0.1, 0.8, 0.3, 1) 0.15s forwards; }
+
+@keyframes waterBubble1 {
+  0% { transform: scale(0.3) translate(0, 40px); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: scale(1.4) translate(-35px, -60px); opacity: 0; }
+}
+@keyframes waterBubble2 {
+  0% { transform: scale(0.3) translate(0, 40px); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: scale(1.1) translate(40px, -70px); opacity: 0; }
+}
+@keyframes waterBubble3 {
+  0% { transform: scale(0.3) translate(0, 40px); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: scale(1.5) translate(-10px, -110px); opacity: 0; }
+}
+@keyframes waterBubble4 {
+  0% { transform: scale(0.3) translate(0, 40px); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: scale(1.3) translate(25px, -40px); opacity: 0; }
+}
+@keyframes waterBubble5 {
+  0% { transform: scale(0.3) translate(0, 40px); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: scale(1.6) translate(-30px, -20px); opacity: 0; }
+}
+
+/* --- TIPO PLANTA 🍃 --- */
+[data-attacker-type="Planta"] .vfx-particle,
+[data-attacker-type="planta"] .vfx-particle {
+  background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+  width: 14px;
+  height: 8px;
+  border-radius: 12px 2px; /* Forma de hoja de afeitar */
+}
+
+[data-attacker-type="Planta"] .vp1 { animation: grassLeaf1 0.8s ease-in-out forwards; }
+[data-attacker-type="Planta"] .vp2 { animation: grassLeaf2 0.8s ease-in-out 0.15s forwards; }
+[data-attacker-type="Planta"] .vp3 { animation: grassLeaf3 0.8s ease-in-out 0.05s forwards; }
+[data-attacker-type="Planta"] .vp4 { animation: grassLeaf4 0.8s ease-in-out 0.2s forwards; }
+[data-attacker-type="Planta"] .vp5 { animation: grassLeaf5 0.8s ease-in-out 0.08s forwards; }
+
+@keyframes grassLeaf1 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.3) rotate(360deg) translate(-70px, -40px); opacity: 0; }
+}
+@keyframes grassLeaf2 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.1) rotate(-280deg) translate(60px, -50px); opacity: 0; }
+}
+@keyframes grassLeaf3 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.4) rotate(420deg) translate(-20px, 80px); opacity: 0; }
+}
+@keyframes grassLeaf4 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.2) rotate(-380deg) translate(50px, 40px); opacity: 0; }
+}
+@keyframes grassLeaf5 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(1.5) rotate(240deg) translate(-50px, -70px); opacity: 0; }
+}
+
+/* --- TIPO PSÍQUICO 🔮 --- */
+[data-attacker-type="Psíquico"] .vfx-particle,
+[data-attacker-type="psiquico"] .vfx-particle,
+[data-attacker-type="Psiquico"] .vfx-particle {
+  border: 2px solid #d500f9;
+  background: transparent;
+  box-shadow: 0 0 12px rgba(213, 0, 249, 0.4), inset 0 0 8px rgba(213, 0, 249, 0.4);
+  border-radius: 50%;
+}
+
+[data-attacker-type="Psíquico"] .vp1 { width: 40px; height: 40px; animation: psyWave 0.75s ease-out forwards; }
+[data-attacker-type="Psíquico"] .vp2 { width: 60px; height: 60px; animation: psyWave 0.75s ease-out 0.15s forwards; }
+[data-attacker-type="Psíquico"] .vp3 { width: 80px; height: 80px; animation: psyWave 0.75s ease-out 0.3s forwards; }
+[data-attacker-type="Psíquico"] .vp4 { width: 50px; height: 50px; animation: psyWave 0.75s ease-out 0.08s forwards; }
+[data-attacker-type="Psíquico"] .vp5 { width: 70px; height: 70px; animation: psyWave 0.75s ease-out 0.22s forwards; }
+
+@keyframes psyWave {
+  0% { transform: scale(0.2); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; filter: blur(3px); }
+}
+
+/* --- TIPO NORMAL ✨ --- */
+[data-attacker-type="Normal"] .vfx-particle,
+[data-attacker-type="normal"] .vfx-particle {
+  background: #fff;
+  box-shadow: 0 0 10px #fff, 0 0 18px var(--accent-cyan);
+  width: 10px;
+  height: 10px;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); /* Forma de estrella retro */
+}
+
+[data-attacker-type="Normal"] .vp1 { animation: normStar1 0.8s ease-out forwards; }
+[data-attacker-type="Normal"] .vp2 { animation: normStar2 0.8s ease-out 0.12s forwards; }
+[data-attacker-type="Normal"] .vp3 { animation: normStar3 0.8s ease-out 0.04s forwards; }
+[data-attacker-type="Normal"] .vp4 { animation: normStar4 0.8s ease-out 0.22s forwards; }
+[data-attacker-type="Normal"] .vp5 { animation: normStar5 0.8s ease-out 0.08s forwards; }
+
+@keyframes normStar1 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.4) rotate(180deg) translate(-50px, -50px); opacity: 0; }
+}
+@keyframes normStar2 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.2) rotate(-140deg) translate(40px, -60px); opacity: 0; }
+}
+@keyframes normStar3 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.5) rotate(220deg) translate(10px, 80px); opacity: 0; }
+}
+@keyframes normStar4 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.3) rotate(-260deg) translate(-60px, 30px); opacity: 0; }
+}
+@keyframes normStar5 {
+  0% { transform: scale(0.2) rotate(0deg) translate(0, 0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.6) rotate(300deg) translate(50px, 40px); opacity: 0; }
+}
+
+/* =========================================================================
+   FASÉ 1: SECUENCIA CINEMÁTICA AL DEBILITAR (FAINTED DISSOLVE)
+   ========================================================================= */
+
+.active-combat-card-box.fainted-card {
+  animation: faintedDissolve 1.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
+  box-shadow: 0 0 50px rgba(255, 23, 68, 0.8) !important;
+  border-color: var(--accent-red) !important;
+}
+
+@keyframes faintedDissolve {
+  0% {
+    transform: scale(1) rotate(0deg) translateY(0);
+    filter: grayscale(0) brightness(1) contrast(1);
+    opacity: 1;
+  }
+  20% {
+    /* Sacudida violenta y destello rojo intenso */
+    transform: scale(1.08) rotate(3deg) translateY(-10px);
+    filter: grayscale(0.2) brightness(1.7) contrast(1.3);
+    box-shadow: 0 0 45px rgba(255, 23, 68, 0.9), inset 0 0 20px rgba(255, 23, 68, 0.5);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.04) rotate(-3deg) translateY(-8px);
+    filter: grayscale(0.4) brightness(1.5);
+  }
+  40% {
+    transform: scale(1.06) rotate(2deg) translateY(-9px);
+    filter: grayscale(0.5) brightness(1.6);
+  }
+  50% {
+    /* Resquebrajamiento y disolución */
+    transform: scale(0.95) rotate(-2deg) translateY(5px);
+    filter: grayscale(0.7) brightness(0.8) blur(1px);
+    opacity: 0.9;
+  }
+  100% {
+    /* Desvanecimiento definitivo hundiéndose */
+    transform: scale(0.5) rotate(-15deg) translateY(160px);
+    filter: grayscale(1) brightness(0.1) blur(8px);
+    opacity: 0;
+  }
+}
+
+/* =========================================================================
+   FASE 2: ESTILOS Y AURAS DE ESTADOS ALTERADOS EN COMBATE
+   ========================================================================= */
+
+/* Aura Veneno 🤢 */
+.active-combat-card-box.status-poisoned {
+  border: 2px solid #d500f9 !important;
+  animation: poisonPulse 2s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes poisonPulse {
+  from {
+    box-shadow: 0 0 18px rgba(213, 0, 249, 0.45), inset 0 0 10px rgba(213, 0, 249, 0.2) !important;
+  }
+  to {
+    box-shadow: 0 0 35px rgba(213, 0, 249, 0.8), inset 0 0 20px rgba(213, 0, 249, 0.45) !important;
+  }
+}
+
+/* Aura Quemadura 🥵 */
+.active-combat-card-box.status-burned {
+  border: 2px solid #ff3d00 !important;
+  animation: burnPulse 1.8s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes burnPulse {
+  from {
+    box-shadow: 0 0 18px rgba(255, 61, 0, 0.45), inset 0 0 10px rgba(255, 61, 0, 0.2) !important;
+  }
+  to {
+    box-shadow: 0 0 35px rgba(255, 61, 0, 0.85), inset 0 0 22px rgba(255, 61, 0, 0.5) !important;
+  }
+}
+
+/* Aura Parálisis ⚡ */
+.active-combat-card-box.status-paralyzed {
+  border: 2px solid #ffd600 !important;
+  animation: paralysisPulse 1.2s infinite alternate ease-in-out;
+}
+@keyframes paralysisPulse {
+  from {
+    box-shadow: 0 0 15px rgba(255, 214, 0, 0.4), inset 0 0 8px rgba(255, 214, 0, 0.2) !important;
+    transform: rotate(0deg);
+  }
+  50% {
+    /* Efecto de estática temblorosa */
+    transform: translate(1px, -0.5px) rotate(0.2deg);
+  }
+  to {
+    box-shadow: 0 0 32px rgba(255, 214, 0, 0.8), inset 0 0 18px rgba(255, 214, 0, 0.45) !important;
+    transform: translate(-1px, 0.5px) rotate(-0.2deg);
+  }
+}
+
+/* Distintivos de Estado Alterado (Status Badges) */
+.status-badge {
+  font-size: 0.58rem;
+  font-weight: 900;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: inline-block;
+  font-family: monospace;
+}
+
+.poison-badge {
+  background: #d500f9;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 0 8px rgba(213, 0, 249, 0.6);
+}
+
+.burn-badge {
+  background: #ff3d00;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 0 8px rgba(255, 61, 0, 0.6);
+}
+
+.paralysis-badge {
+  background: #ffd600;
+  color: #0b0d19;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 0 0 8px rgba(255, 214, 0, 0.6);
+}
+
+/* ==================== BANCA DE COMBATE TÁCTICA (Fase 5) ==================== */
+.bench-zone {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+  width: 100%;
+}
+
+.bench-slot-neon {
+  width: 130px;
+  height: 84px;
+  background: rgba(14, 16, 31, 0.45);
+  border: 1px dashed rgba(0, 229, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.05);
+}
+
+.cpu-bench-zone .bench-slot-neon {
+  border-color: rgba(255, 23, 68, 0.2);
+  box-shadow: inset 0 0 10px rgba(255, 23, 68, 0.05);
+}
+
+.bench-slot-neon.empty-bench-slot {
+  opacity: 0.6;
+}
+
+.empty-icon-slot {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.15);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.bench-card-mini {
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(20, 23, 44, 0.8);
+  border: 1.5px solid var(--accent-cyan);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.cpu-bench-zone .bench-card-mini {
+  border-color: var(--accent-red);
+}
+
+.mini-card-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.58rem;
+  font-weight: 800;
+  gap: 4px;
+}
+
+.mini-name {
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-hp {
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
+.mini-thumb {
+  height: 40px;
+  object-fit: contain;
+  margin-top: -2px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+}
+
+.bench-mini-controls {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(11, 13, 25, 0.9);
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  padding: 8px;
+}
+
+.bench-card-mini:hover .bench-mini-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btn-bench-action {
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: var(--font-main);
+  font-size: 0.58rem;
+  font-weight: 800;
+  cursor: pointer;
+  width: 100%;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-bench-action.retreat-btn {
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.btn-bench-action.retreat-btn:hover {
+  background: var(--accent-cyan);
+  color: #0b0d19;
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+.btn-bench-action.promote-btn {
+  background: rgba(255, 214, 0, 0.15);
+  border: 1px solid var(--accent-yellow);
+  color: var(--accent-yellow);
+  animation: promotePulse 1s infinite alternate;
+}
+.btn-bench-action.promote-btn:hover {
+  background: var(--accent-yellow);
+  color: #0b0d19;
+  box-shadow: 0 0 8px var(--accent-yellow);
+}
+
+@keyframes promotePulse {
+  from { box-shadow: 0 0 2px rgba(255, 214, 0, 0.3); }
+  to { box-shadow: 0 0 8px rgba(255, 214, 0, 0.7); }
+}
+
+.btn-invoke-hand.bench-btn {
+  background: rgba(0, 229, 255, 0.1) !important;
+  border: 1.5px solid var(--accent-cyan) !important;
+  color: var(--accent-cyan) !important;
+}
+.btn-invoke-hand.bench-btn:hover {
+  background: var(--accent-cyan) !important;
+  color: #0b0d19 !important;
+  box-shadow: 0 0 10px var(--accent-cyan) !important;
+}
+
+/* ==================== CARD SLEEVES (Fase 5) ==================== */
+.sleeve-foil-card {
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.5s ease;
+}
+
+.sleeve-pokeball-art {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid rgba(255,255,255,0.18);
+  border-radius: 50%;
+  position: relative;
+}
+.sleeve-pokeball-art::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 2.5px;
+  background: rgba(255,255,255,0.18);
+  transform: translateY(-50%);
+}
+
+.sleeve-shimmer {
+  position: absolute;
+  top: 0; left: -150%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-20deg);
+  animation: sleeveShimmerAnim 4s infinite ease-in-out;
+}
+
+/* Clases de Fondos de Funda */
+.sleeve-foil-card.default {
+  background: radial-gradient(circle, #1a224a 0%, #0d112b 100%);
+  border-color: #00b0ff;
+}
+.sleeve-foil-card.electric {
+  background: radial-gradient(circle, #332d00 0%, #0f0b00 100%);
+  border-color: #ffd600;
+}
+.sleeve-foil-card.electric .sleeve-pokeball-art { border-color: rgba(255, 214, 0, 0.25); }
+.sleeve-foil-card.electric .sleeve-pokeball-art::before { background: rgba(255, 214, 0, 0.25); }
+
+.sleeve-foil-card.fire {
+  background: radial-gradient(circle, #380a0a 0%, #120000 100%);
+  border-color: #ff1744;
+}
+.sleeve-foil-card.fire .sleeve-pokeball-art { border-color: rgba(255, 23, 68, 0.25); }
+.sleeve-foil-card.fire .sleeve-pokeball-art::before { background: rgba(255, 23, 68, 0.25); }
+
+.sleeve-foil-card.water {
+  background: radial-gradient(circle, #05263b 0%, #000b14 100%);
+  border-color: #00e5ff;
+}
+.sleeve-foil-card.water .sleeve-pokeball-art { border-color: rgba(0, 229, 255, 0.25); }
+.sleeve-foil-card.water .sleeve-pokeball-art::before { background: rgba(0, 229, 255, 0.25); }
+
+.sleeve-foil-card.astral {
+  background: radial-gradient(circle, #25093b 0%, #08000f 100%);
+  border-color: #d500f9;
+  animation: sleeveHolo 4s infinite linear;
+}
+.sleeve-foil-card.astral .sleeve-pokeball-art { border-color: rgba(213, 0, 249, 0.3); }
+.sleeve-foil-card.astral .sleeve-pokeball-art::before { background: rgba(213, 0, 249, 0.3); }
+
+.sleeve-foil-card.gold {
+  background: radial-gradient(circle, #3b2800 0%, #120900 100%);
+  border-color: #ffa000;
+}
+.sleeve-foil-card.gold .sleeve-pokeball-art { border-color: rgba(255, 160, 0, 0.3); }
+.sleeve-foil-card.gold .sleeve-pokeball-art::before { background: rgba(255, 160, 0, 0.3); }
+

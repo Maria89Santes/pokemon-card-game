@@ -1,0 +1,19 @@
+{
+  "name": "Pokémon Card Game Academia",
+  "short_name": "PokeCardGame",
+  "description": "Un juego de cartas de Pokémon ultra inmersivo y reactivo de alto rendimiento.",
+  "theme_color": "#0b0d19",
+  "background_color": "#0b0d19",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
